@@ -25,8 +25,15 @@
 |* @fn 
 |*
 \***********************************/
-int main(void)
+int main(int argc, char **argv)
 {
-    //GTC::room r;
+    std::string str = "room0:\n";
+    str += argv[1];
+    try {
+        (void) GTC::room::parseFromString(str);
+    }
+    catch(const char *e) {
+        std::cerr << e << std::endl;
+    }
 }
 

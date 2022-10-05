@@ -20,7 +20,9 @@
 |* INCLUDE
 |***********************************/
 #include <iostream>
+#include <vector>
 #include "smartptr.hpp"
+#include "gameobj.hpp"
 
 /************************************
 |* NAMESPACE GTC
@@ -36,8 +38,25 @@ namespace GTC
 \***********************************/
 class room
 {
+    public:
+        class transition
+        {
+            private:
+                unsigned int x1, x2, y1, y2;
+                unsigned int parent_room, to_room;
+
+            public:
+                ~transition();
+                transition(const unsigned int, const unsigned int, const unsigned int, const unsigned int, const unsigned int, const unsigned int);
+
+                int in_collision(const unsigned int, const unsigned int) const;
+        };
+
     private:
-        GTC::smart_ptr<unsigned int> tiledata;
+        smart_ptr<unsigned int> tiledata;
+        std::vector<smart_ptr<gameobj>> objects;
+        std::vector<smart_ptr<transition>> transitiondata;
+        std::string name;
         unsigned int width;
         unsigned int height;
     
@@ -47,7 +66,6 @@ class room
 
         static room parseFromString(const std::string);
 };
-
 
 };
 #endif
