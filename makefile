@@ -26,12 +26,12 @@ SOURCE_DIR := 60_TESTING
 
 OUTPUT_FILE := ConsoleEngine
 
-CCFLAGS := -Wno-literal-suffix
+CCFLAGS := -Wno-literal-suffix -I./80_EXTERN/ -lX11 -lXtst
 
 ### SOURCE/OBJ DEFINITIONS ###
 
 # Source Files, You may edit these to include files! 
-SOURCES := main.cpp
+SOURCES := main.cpp cutils.cpp
 
 # Check if sources not empty
 ifeq ($(SOURCES),)

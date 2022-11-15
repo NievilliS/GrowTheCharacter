@@ -18,10 +18,11 @@
 |***********************************/
 
 #include <iostream>
-#include "utils.hpp"
+#include "cutils.hpp"
 #include "mgrs.hpp"
-#include <consoleengine/ConsoleEngine.hpp>
 #include "RTE.hpp"
+
+static std::thread thr;
 
 /************************************
 |* MAIN fct
@@ -45,24 +46,48 @@ int main(void)
 
     dcm.subscribe(&m);
 
-    dcm.launch([&]{
-        using namespace RTE;
-        static int last_pr = 0;
-        int i_key = getkey();
-        while(i_key != -1)
-        {
-            last_pr = 1;
-            std::cout << (int)i_key << std::endl;
-        }
-        if(last_pr == 1)
-        {
-            last_pr = 0;
-            #define releasekeyif(name) if(name ## _kbisdown()) name ## _kbrelease()
-            releasekeyif(up);
-            releasekeyif(down);
-            releasekeyif(left);
-            releasekeyif(right);
-            releasekeyif(escape);
-        }
+    dcm.subscribe_post([]{
+        simKeyPress();
     });
+
+    thr = std::thread([]() -> void {
+        setBufferedInput(false);
+        int c = 0;
+
+        while(RTE::dcm_ptr->is_running())
+        {
+            if(c == 'q')
+            {
+                CE << ConsoleEngine::CLEAR << "Ending by q press" << ConsoleEngine::PRINTOUT;
+                RTE::dcm_ptr->stop();
+                getChar();
+                break;
+            }
+
+            switch(c)
+            {
+                case 119:
+                case 65:
+                    RTE::up_kbpress();
+                break;
+
+                case 66:
+                case 115:
+                    RTE::down_kbpress();
+                break;
+
+                default:
+                    std::cout << "Char: " << c << std::endl;
+            }
+
+            c = getChar();
+        }
+
+        setBufferedInput(true);
+    });
+
+    dcm.launch([]{});
+
+    thr.join();
+
 }

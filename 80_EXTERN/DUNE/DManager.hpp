@@ -50,6 +50,7 @@
 |          GLOBAL DECLARATIONS           |
 *****************************************/
 
+
 /**********************
  * NAMESPACE DManager *
  **********************
@@ -163,7 +164,9 @@ public:
             this->terminated = 1;
             this->cv.notify_one();
             this->thread.join();
+            #ifdef DMANAGER_PRINT_DEBUG
             std::cout << "Automatic termination of " << this->flags.name << " " << std::endl;
+            #endif
         }
     }
 
@@ -263,7 +266,9 @@ public:
             this->terminated = 1;
             this->cv.notify_one();
             this->thread.join();
+            #ifdef DMANAGER_PRINT_DEBUG
             std::cout << "Manual termination of " << this->flags.name << " " << std::endl;
+            #endif
         }
     }
 

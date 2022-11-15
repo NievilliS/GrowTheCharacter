@@ -122,8 +122,6 @@ public:
         {
             while(!(*i)->can_run());
         }
-
-        std::cout << "DONE! Loop starting!" << std::endl;
     
         //!! Main loop
         while(this->running) { macro(); for(auto i = managers.begin(); i != managers.end(); i++)
@@ -147,6 +145,11 @@ public:
     void subscribe_post(std::function<void()> fct)
     {
         post_terminate.push_back(fct);
+    }
+
+    inline bool is_running()
+    {
+        return running;
     }
 };
 

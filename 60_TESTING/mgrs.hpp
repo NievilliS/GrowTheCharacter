@@ -8,7 +8,7 @@ public:
     Mgr() : DManager(DManagerFlags{
         .can_skip = false,
         .log_lag = false,
-        .target_period = std::chrono::milliseconds(1000),
+        .target_period = std::chrono::milliseconds(5),
         .delay_target_period = std::chrono::milliseconds(0),
         .log_ela = false,
         .name = "Hello",
@@ -17,12 +17,13 @@ public:
     {
     }
 
-    int ct = 0;
+    unsigned long long tick = 0ULL;
 
     virtual void run_user()
     {
-        ct++;
-        if(ct > 10)
-            RTE::stop();
+        tick++;
+        ConsoleEngine_context <<
+            ConsoleEngine::CLEAR << ConsoleEngine::ERASE_SCREEN << Pixel::YELLOW <<
+            "Count: " << tick << ConsoleEngine::PRINTOUT;
     }
 };

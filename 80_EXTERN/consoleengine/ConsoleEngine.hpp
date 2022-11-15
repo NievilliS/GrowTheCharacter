@@ -43,8 +43,18 @@ protected:
     std::ostream *m_stream;
     int m_start_x = 1;
     int m_start_y = 1;
+    Pixel::Color m_active_color = Pixel::DEFAULT;
+    Pixel::ColorType m_active_type = Pixel::TEXT;
+    Pixel::Font m_active_font = Pixel::NORMAL;
     
 public:
+    enum controls
+    {
+        CLEAR,
+        ERASE_SCREEN,
+        PRINTOUT
+    };
+
     ConsoleEngine(std::ostream &stream)
     {
         m_stream = &stream;
@@ -67,30 +77,66 @@ public:
     template<typename T>
     inline ConsoleEngine &operator<<(const T &obj)
     {
-        pixelstr ps;
-        Pixel::copy_string_to_pixel_string(ps, std::to_string(obj));
-
-        _CE_lexpr m_content += ps;
-        _CE_uexpr return *this;
+        return this->add_string(std::to_string(obj), m_active_color, m_active_type, m_active_font);
     }
 
     inline ConsoleEngine &operator<<(const pixelstr &obj)
     {
-        _CE_lexpr m_content += obj;
+        pixelstr ps = obj;
+        Pixel::for_each(ps,
+            [this](const size_t _index, char &_ch, Pixel::ColorType &_type, Pixel::Color &_col, Pixel::Font &_font)
+        {
+            _type = this->m_active_type;
+            _col = this->m_active_color;
+            _font = this->m_active_font;
+        });
+
+        _CE_lexpr m_content += ps;
         _CE_uexpr return *this;
     }
 
     inline ConsoleEngine &operator<<(const char *c)
     {
-        pixelstr ps;
-        Pixel::copy_string_to_pixel_string(ps, c);
+        return this->add_string(c, m_active_color, m_active_type, m_active_font);
+    }
 
-        _CE_lexpr m_content += ps;
+    inline ConsoleEngine &operator<<(const controls &&c)
+    {
+        switch(c)
+        {
+            case CLEAR:
+                this->clear();
+                break;
+            case ERASE_SCREEN:
+                this->erase_screen();
+                break;
+            case PRINTOUT:
+                this->print_to_stream();
+                break;
+        }
+        return *this;
+    }
+
+    inline ConsoleEngine &operator<<(const Pixel::Color &&col)
+    {
+        _CE_lexpr m_active_color = col;
+        _CE_uexpr return *this;
+    }
+
+    inline ConsoleEngine &operator<<(const Pixel::ColorType &&type)
+    {
+        _CE_lexpr m_active_type = type;
+        _CE_uexpr return *this;
+    }
+
+    inline ConsoleEngine &operator<<(const Pixel::Font &&font)
+    {
+        _CE_lexpr m_active_font = font;
         _CE_uexpr return *this;
     }
 
     inline ConsoleEngine &add_string(const std::string &str,
-        const Pixel::Color color = Pixel::DEFAULT,
+        const Pixel::Color color,
         const Pixel::ColorType color_type = Pixel::TEXT,
         const Pixel::Font font = Pixel::NORMAL
     ) {
@@ -106,6 +152,11 @@ public:
 
         _CE_lexpr m_content += ps;
         _CE_uexpr return *this;
+    }
+
+    inline ConsoleEngine &add_string(const std::string &str)
+    {
+        return add_string(str, m_active_color, m_active_type, m_active_font);
     }
 
     inline pixelstr sync()
@@ -129,6 +180,11 @@ public:
     inline void erase_screen()
     {
         *m_stream << ERASE_DISPLAY << std::flush;
+    }
+
+    inline void print_to_stream()
+    {
+        (*m_stream) << *this;
     }
 
     friend inline std::ostream &operator<<(std::ostream &o, ConsoleEngine &ce)
