@@ -17,6 +17,9 @@
 |* INCLUDE
 |***********************************/
 
+#include <iostream>
+#include "utils.hpp"
+#include "mgrs.hpp"
 #include <consoleengine/ConsoleEngine.hpp>
 #include "RTE.hpp"
 
@@ -28,6 +31,7 @@
 |***********************************/
 int main(void)
 {
+    #define CE ConsoleEngine_context
     {
         ConsoleEngine ce(std::cout);
         ConsoleEngine::_set_context(ce);
@@ -35,64 +39,30 @@ int main(void)
 
     DManager::DControlManager dcm;
     RTE::dcm_ptr = &dcm;
+    Mgr m;
 
-    class : DManager::DManager {
-        using DManager::DManager::DManager;
+    std::cout << ERASE_DISPLAY << CURSOR_MOVE_TO(1,1) << std::flush;
 
-        virtual void init_user() override
+    dcm.subscribe(&m);
+
+    dcm.launch([&]{
+        using namespace RTE;
+        static int last_pr = 0;
+        int i_key = getkey();
+        while(i_key != -1)
         {
+            last_pr = 1;
+            std::cout << (int)i_key << std::endl;
         }
-
-        volatile int count = 0;
-
-        virtual void run_user() override
+        if(last_pr == 1)
         {
-            count++;
-            ConsoleEngine_context.clear();
-            ConsoleEngine_context.add_string("Count: ", Pixel::DEFAULT, Pixel::TEXT, Pixel::BOLD)
-                .add_string(std::to_string(count), Pixel::YELLOW, Pixel::TEXT, Pixel::UNDERLINED);
-
-            if(count > 10000)
-            {
-                RTE::dcm_ptr->stop();
-            }
+            last_pr = 0;
+            #define releasekeyif(name) if(name ## _kbisdown()) name ## _kbrelease()
+            releasekeyif(up);
+            releasekeyif(down);
+            releasekeyif(left);
+            releasekeyif(right);
+            releasekeyif(escape);
         }
-
-    } mgr_stack(DManager::DManager::DManagerFlags{
-        .can_skip               = true,    
-        .log_lag                = true,    
-        .target_period          = std::chrono::milliseconds(2),        
-        .delay_target_period    = std::chrono::milliseconds(0),                
-        .log_ela                = false,    
-        .name                   = "Test Manager",
-        .adress_millis          = &RTE::millis        
     });
-
-    class : DManager::DManager {
-        using DManager::DManager::DManager;
-
-        virtual void init_user() override
-        {
-        }
-
-        virtual void run_user() override
-        {
-            std::cout << ConsoleEngine_context.add_string(std::string(" Elapsation: ") + std::to_string(RTE::millis) + "ms", Pixel::BLACK);
-        }
-
-    } mgr_print(DManager::DManager::DManagerFlags{
-        .can_skip               = true,    
-        .log_lag                = true,    
-        .target_period          = std::chrono::milliseconds(10),        
-        .delay_target_period    = std::chrono::milliseconds(0),                
-        .log_ela                = false,    
-        .name                   = "Test Manager",
-        .adress_millis          = nullptr        
-    });
-
-
-    dcm.subscribe(&mgr_stack);
-    dcm.subscribe(&mgr_print);
-    dcm.launch();
 }
-
