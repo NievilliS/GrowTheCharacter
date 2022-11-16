@@ -26,7 +26,7 @@ SOURCE_DIR := 60_TESTING
 
 OUTPUT_FILE := ConsoleEngine
 
-CCFLAGS := -Wno-literal-suffix -I./80_EXTERN/ -lX11 -lXtst
+CCFLAGS := -Wno-literal-suffix -I./80_EXTERN/ -lX11 -lXtst -g
 
 ### SOURCE/OBJ DEFINITIONS ###
 

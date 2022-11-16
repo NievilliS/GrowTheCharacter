@@ -77,27 +77,23 @@ public:
     template<typename T>
     inline ConsoleEngine &operator<<(const T &obj)
     {
-        return this->add_string(std::to_string(obj), m_active_color, m_active_type, m_active_font);
+        return this->add_string(std::to_string(obj));
     }
 
     inline ConsoleEngine &operator<<(const pixelstr &obj)
     {
-        pixelstr ps = obj;
-        Pixel::for_each(ps,
-            [this](const size_t _index, char &_ch, Pixel::ColorType &_type, Pixel::Color &_col, Pixel::Font &_font)
-        {
-            _type = this->m_active_type;
-            _col = this->m_active_color;
-            _font = this->m_active_font;
-        });
-
-        _CE_lexpr m_content += ps;
+        _CE_lexpr m_content += obj;
         _CE_uexpr return *this;
+    }
+
+    inline ConsoleEngine &operator<<(const std::string &obj)
+    {
+        return this->add_string(obj);
     }
 
     inline ConsoleEngine &operator<<(const char *c)
     {
-        return this->add_string(c, m_active_color, m_active_type, m_active_font);
+        return this->add_string(std::string(c));
     }
 
     inline ConsoleEngine &operator<<(const controls &&c)
@@ -117,32 +113,32 @@ public:
         return *this;
     }
 
-    inline ConsoleEngine &operator<<(const Pixel::Color &&col)
+    inline ConsoleEngine &operator<<(const Pixel::Color &col)
     {
         _CE_lexpr m_active_color = col;
         _CE_uexpr return *this;
     }
 
-    inline ConsoleEngine &operator<<(const Pixel::ColorType &&type)
+    inline ConsoleEngine &operator<<(const Pixel::ColorType &type)
     {
         _CE_lexpr m_active_type = type;
         _CE_uexpr return *this;
     }
 
-    inline ConsoleEngine &operator<<(const Pixel::Font &&font)
+    inline ConsoleEngine &operator<<(const Pixel::Font &font)
     {
         _CE_lexpr m_active_font = font;
         _CE_uexpr return *this;
     }
 
     inline ConsoleEngine &add_string(const std::string &str,
-        const Pixel::Color color,
-        const Pixel::ColorType color_type = Pixel::TEXT,
-        const Pixel::Font font = Pixel::NORMAL
+        const Pixel::Color &color,
+        const Pixel::ColorType &color_type = Pixel::TEXT,
+        const Pixel::Font &font = Pixel::NORMAL
     ) {
         pixelstr ps;
         Pixel::copy_string_to_pixel_string_par(ps, str,
-            [color_type, color, font](const size_t _index, char &_ch, Pixel::ColorType &_type, Pixel::Color &_col, Pixel::Font &_font)
+            [&](const size_t _index, char &_ch, Pixel::ColorType &_type, Pixel::Color &_col, Pixel::Font &_font)
             {
                 _type = color_type;
                 _col = color;
@@ -169,6 +165,7 @@ public:
     inline void clear()
     {
         _CE_lexpr this->m_content.clear();
+        Pixel::reset_cl();
         _CE_uexpr
     }
 
@@ -185,6 +182,18 @@ public:
     inline void print_to_stream()
     {
         (*m_stream) << *this;
+    }
+
+    inline void getxy(int *y, int *x)
+    {
+        *y = m_start_y;
+        *x = m_start_x;
+    }
+
+    inline void setxy(int y, int x)
+    {
+        m_start_y = y;
+        m_start_x = x;
     }
 
     friend inline std::ostream &operator<<(std::ostream &o, ConsoleEngine &ce)

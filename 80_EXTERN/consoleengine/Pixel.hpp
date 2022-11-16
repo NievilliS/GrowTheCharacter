@@ -52,40 +52,79 @@ constexpr __UINT8_TYPE__ operator "" uc(unsigned long long val)
 
 namespace Pixel
 {
-    enum ColorType : __UINT8_TYPE__
+    struct ColorType
     {
-        TEXT,
-        BACKGROUND
-    };
+    private:
+        __UINT8_TYPE__ signature;
+    
+    public:
+        ColorType(const __UINT8_TYPE__ _signature): signature(_signature) {}
+        ColorType(const ColorType &ct): signature(ct.signature) {}
+        inline int operator<<(const int shift) const {return ((int) signature) << shift;}
+        inline ColorType operator=(const ColorType &ct) {this->signature = ct.signature; return *this;}
+        inline bool operator==(const ColorType &ct) {return this->signature == ct.signature;}
+        inline bool operator!=(const ColorType &ct) {return this->signature != ct.signature;}
 
-    enum Color : __UINT8_TYPE__
-    {
-        BLACK,
-        RED,
-        GREEN,
-        YELLOW,
-        BLUE,
-        MAGENTA,
-        CYAN,
-        WHITE,
-        DEFAULT
-    };
+    } const TEXT(0), BACKGROUND(1);
 
-    enum Font : __UINT8_TYPE__
+    struct Color
     {
-        NORMAL = 0uc,
-        BOLD = 1uc,
-        UNDERLINED = 2uc,
-        BOLD_UNDERLINED = 3uc,
-        INVERSE = 4uc,
-        INVERSE_BOLD = 5uc,
-        INVERSE_UNDERLINED = 6uc,
-        ALL = 7uc
-    };
+    private:
+        __UINT8_TYPE__ signature;
+        std::string linked_tcontrols;
+        std::string linked_bcontrols;
+    
+    public:
+        Color(const __UINT8_TYPE__ _signature, const std::string _linked_tcontrols, const std::string _linked_bcontrols): signature(_signature), linked_tcontrols(_linked_tcontrols), linked_bcontrols(_linked_bcontrols) {}
+        Color(const Color &ct): signature(ct.signature), linked_tcontrols(ct.linked_tcontrols), linked_bcontrols(ct.linked_bcontrols) {}
+        inline int operator<<(const int shift) const {return ((int) signature) << shift;}
+        inline Color &operator=(const Color &ct) {this->signature = ct.signature; this->linked_tcontrols = ct.linked_tcontrols; this->linked_bcontrols = ct.linked_bcontrols; return *this;}
+        inline bool operator==(const Color &ct) {return this->signature == ct.signature;}
+        inline bool operator!=(const Color &ct) {return this->signature != ct.signature;}
+        inline std::string get_tcontrols() const {return this->linked_tcontrols;}
+        inline std::string get_bcontrols() const {return this->linked_bcontrols;}
+        inline int getsign() const {return this->signature;}
+    }
+        const BLACK(      0,  COLORT_BLACK,   COLORB_BLACK),
+        RED(        1,  COLORT_RED,     COLORB_RED),
+        GREEN(      2,  COLORT_GREEN,   COLORB_GREEN),
+        YELLOW(     3,  COLORT_YELLOW,  COLORB_YELLOW),
+        BLUE(       4,  COLORT_BLUE,    COLORB_BLUE),
+        MAGENTA(    5,  COLORT_MAGENTA, COLORB_MAGENTA),
+        CYAN(       6,  COLORT_CYAN,    COLORB_CYAN),
+        WHITE(      7,  COLORT_WHITE,   COLORB_WHITE),
+        DEFAULT(    8,  COLORT_DEFAULT, COLORB_DEFAULT)
+    ;
+
+    struct Font
+    {
+    private:
+        __UINT8_TYPE__ signature;
+    
+    public:
+        Font(const __UINT8_TYPE__ _signature): signature(_signature) {}
+        Font(const Font &ct): signature(ct.signature){}
+        inline int operator<<(const int shift) const {return ((int) signature) << shift;}
+        inline Font &operator=(const Font &ct) {this->signature = ct.signature; return *this;}
+        inline bool operator==(const Font &ct) const {return this->signature == ct.signature;}
+        inline bool operator==(const int ct) const {return this->signature == ct;}
+        inline bool operator!=(const Font &ct) const {return this->signature != ct.signature;}
+        inline int operator&(const Font &ct) const {return this->signature & ct.signature;}
+
+    }
+        const NORMAL(       0   ),
+        BOLD(               1   ),
+        UNDERLINED(         2   ),
+        BOLD_UNDERLINED(    3   ),
+        INVERSE(            4   ),
+        INVERSE_BOLD(       5   ),
+        INVERSE_UNDERLINED( 6   ),
+        ALL(                7   )
+    ;
 
     typedef const std::function<void(const size_t, char &, ColorType &, Color &, Font &)> pixel_lambda; 
 
-    inline static const Color int_to_color(const __UINT8_TYPE__ val)
+    inline static const Color &int_to_color(const __UINT8_TYPE__ val)
     {
         switch(val)
         {
@@ -109,7 +148,7 @@ namespace Pixel
         return DEFAULT;
     }
 
-    inline static const Font int_to_font(const __UINT8_TYPE__ val)
+    inline static const Font &int_to_font(const __UINT8_TYPE__ val)
     {
         switch(val)
         {
@@ -131,7 +170,7 @@ namespace Pixel
         return NORMAL;
     }
     
-    inline static Pixel_t create_pixel(const unsigned char character, const ColorType color_type, const Color color, const Font font)
+    inline static Pixel_t create_pixel(const unsigned char character, const ColorType &color_type, const Color &color, const Font &font)
     {
         return (character > 0uc) ? (character | (color_type << 8) | (color << 9) | (font << 13)) : 0us;
     }
@@ -141,17 +180,17 @@ namespace Pixel
         return (character > 0uc) ? (character | (TEXT << 8) | (DEFAULT << 9) | (NORMAL << 13)) : 0us;
     }
 
-    inline static Pixel_t create_pixel(const unsigned char character, const Color color, const ColorType color_type = TEXT)
+    inline static Pixel_t create_pixel(const unsigned char character, const Color &color, const ColorType &color_type = TEXT)
     {
         return (character > 0uc) ? (character | (color_type << 8) | (color << 9) | (NORMAL << 13)) : 0us;
     }
 
-    inline static Pixel_t create_pixel(const unsigned char character, const Color color, const Font font)
+    inline static Pixel_t create_pixel(const unsigned char character, const Color &color, const Font &font)
     {
         return (character > 0uc) ? (character | (TEXT << 8) | (color << 9) | (font << 13)) : 0us;
     }
 
-    inline static Pixel_t create_pixel(const unsigned char character, const Font font)
+    inline static Pixel_t create_pixel(const unsigned char character, const Font &font)
     {
         return (character > 0uc) ? (character | (TEXT << 8) | (DEFAULT << 9) | (font << 13)) : 0us;
     }
@@ -161,7 +200,7 @@ namespace Pixel
         return int_to_color(((__UINT8_TYPE__)(pixel >> 9)) & 0x0Fuc);
     }
 
-    inline static void set_pixel_color(Pixel_t &pixel, const Color color)
+    inline static void set_pixel_color(Pixel_t &pixel, const Color &color)
     {
         pixel = (pixel & 0xE1FFus) | ((color << 9) & 0x1E00us);
     }
@@ -171,7 +210,7 @@ namespace Pixel
         return ((((__UINT8_TYPE__)(pixel >> 8)) & 0x01uc) > 0x00uc) ? BACKGROUND : TEXT;
     }
 
-    inline static void set_pixel_color_type(Pixel_t &pixel, const ColorType color_type)
+    inline static void set_pixel_color_type(Pixel_t &pixel, const ColorType &color_type)
     {
         pixel = (pixel & 0xFEFFus) | ((color_type << 8) & 0x0100us);
     }
@@ -188,7 +227,7 @@ namespace Pixel
 
     inline static const bool get_is_normal_font(const Pixel_t pixel)
     {
-        return ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc) == NORMAL;
+        return NORMAL == ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc);
     }
 
     inline static void set_normal_font(Pixel_t &pixel)
@@ -198,7 +237,7 @@ namespace Pixel
 
     inline static const bool get_is_bold_font(const Pixel_t pixel)
     {
-        return ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc) & BOLD > 0uc;
+        return (BOLD & ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc)) > 0uc;
     }
 
     inline static void set_use_bold_font(Pixel_t &pixel, const bool b = true)
@@ -208,7 +247,7 @@ namespace Pixel
 
     inline static const bool get_is_underlined_font(const Pixel_t pixel)
     {
-        return ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc) & UNDERLINED > 0uc;
+        return (UNDERLINED & ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc)) > 0uc;
     }
 
     inline static void set_use_underlined_font(Pixel_t &pixel, const bool b = true)
@@ -218,7 +257,7 @@ namespace Pixel
 
     inline static const bool get_is_inverse_font(const Pixel_t pixel)
     {
-        return ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc) & INVERSE > 0uc;
+        return (INVERSE & ((__UINT8_TYPE__)(pixel >> 13) & 0x7uc)) > 0uc;
     }
 
     inline static void set_use_inverse_font(Pixel_t &pixel, const bool b = true)
@@ -231,7 +270,7 @@ namespace Pixel
         return int_to_font((pixel >> 13) & 0x7us);
     }
 
-    inline static void set_pixel_font(Pixel_t &pixel, const Font font)
+    inline static void set_pixel_font(Pixel_t &pixel, const Font &font)
     {
         pixel = (font << 13) | (pixel & 0x1FFFus);
     }
@@ -247,52 +286,11 @@ namespace Pixel
 
         if(old_color != now_color && get_pixel_color_type(pixel) == TEXT)
         {
-            switch(now_color)
-            {
-            case BLACK:
-                ret = COLORT_BLACK; break;
-            case RED:
-                ret = COLORT_RED; break;
-                
-            case GREEN:
-                ret = COLORT_GREEN; break;
-            case YELLOW:
-                ret = COLORT_YELLOW; break;
-            case BLUE:
-                ret = COLORT_BLUE; break;
-            case MAGENTA:
-                ret = COLORT_MAGENTA; break;
-            case CYAN:
-                ret = COLORT_CYAN; break;
-            case WHITE:
-                ret = COLORT_WHITE; break;
-            case DEFAULT:
-                ret = COLORT_DEFAULT; break;
-            }
+            ret += now_color.get_tcontrols();
         }
         else if(old_color != now_color)
         {
-            switch(now_color)
-            {
-            case BLACK:
-                ret = COLORB_BLACK; break;
-            case RED:
-                ret = COLORB_RED; break;
-            case GREEN:
-                ret = COLORB_GREEN; break;
-            case YELLOW:
-                ret = COLORB_YELLOW; break;
-            case BLUE:
-                ret = COLORB_BLUE; break;
-            case MAGENTA:
-                ret = COLORB_MAGENTA; break;
-            case CYAN:
-                ret = COLORB_CYAN; break;
-            case WHITE:
-                ret = COLORB_WHITE; break;
-            case DEFAULT:
-                ret = COLORB_DEFAULT; break;
-            }
+            ret += now_color.get_bcontrols();
         }
 
         if(old_font != now_font)
@@ -323,6 +321,11 @@ namespace Pixel
         
         ret += get_pixel_char(pixel);
         return ret;
+    }
+
+    inline static void reset_cl()
+    {
+        (void) to_string(0x1000us);
     }
 
     inline static const size_t get_pixel_string_length(const Pixel_t *pixel)

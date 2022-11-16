@@ -76,6 +76,16 @@ int main(void)
                     RTE::down_kbpress();
                 break;
 
+                case 67:
+                case 100:
+                    RTE::right_kbpress();
+                break;
+
+                case 68:
+                case 97:
+                    RTE::left_kbpress();
+                break;
+
                 default:
                     std::cout << "Char: " << c << std::endl;
             }
