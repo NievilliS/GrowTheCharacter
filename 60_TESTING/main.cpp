@@ -30,7 +30,7 @@ static std::thread thr;
 |* @fn 
 |*
 |***********************************/
-int main(void)
+/*int main(void)
 {
     #define CE ConsoleEngine_context
     {
@@ -100,4 +100,13 @@ int main(void)
 
     thr.join();
 
+}*/
+
+#include "room.hpp"
+
+int main(void)
+{
+    GTC::room ro(80,420);
+    auto X = ro.retadr();
+    X();
 }

@@ -83,7 +83,6 @@ namespace Pixel
         inline bool operator!=(const Color &ct) {return this->signature != ct.signature;}
         inline std::string get_tcontrols() const {return this->linked_tcontrols;}
         inline std::string get_bcontrols() const {return this->linked_bcontrols;}
-        inline int getsign() const {return this->signature;}
     }
         const BLACK(      0,  COLORT_BLACK,   COLORB_BLACK),
         RED(        1,  COLORT_RED,     COLORB_RED),
