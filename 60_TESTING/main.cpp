@@ -17,8 +17,12 @@
 |* INCLUDE
 |***********************************/
 
-#include <consoleengine/ConsoleEngine.hpp>
+#include <iostream>
+#include "cutils.hpp"
+#include "mgrs.hpp"
 #include "RTE.hpp"
+
+static std::thread thr;
 
 /************************************
 |* MAIN fct
@@ -26,8 +30,9 @@
 |* @fn 
 |*
 |***********************************/
-int main(void)
+/*int main(void)
 {
+    #define CE ConsoleEngine_context
     {
         ConsoleEngine ce(std::cout);
         ConsoleEngine::_set_context(ce);
@@ -35,64 +40,73 @@ int main(void)
 
     DManager::DControlManager dcm;
     RTE::dcm_ptr = &dcm;
+    Mgr m;
 
-    class : DManager::DManager {
-        using DManager::DManager::DManager;
+    std::cout << ERASE_DISPLAY << CURSOR_MOVE_TO(1,1) << std::flush;
 
-        virtual void init_user() override
+    dcm.subscribe(&m);
+
+    dcm.subscribe_post([]{
+        simKeyPress();
+    });
+
+    thr = std::thread([]() -> void {
+        setBufferedInput(false);
+        int c = 0;
+
+        while(RTE::dcm_ptr->is_running())
         {
-        }
-
-        volatile int count = 0;
-
-        virtual void run_user() override
-        {
-            count++;
-            ConsoleEngine_context.clear();
-            ConsoleEngine_context.add_string("Count: ", Pixel::DEFAULT, Pixel::TEXT, Pixel::BOLD)
-                .add_string(std::to_string(count), Pixel::YELLOW, Pixel::TEXT, Pixel::UNDERLINED);
-
-            if(count > 10000)
+            if(c == 'q')
             {
+                CE << ConsoleEngine::CLEAR << "Ending by q press" << ConsoleEngine::PRINTOUT;
                 RTE::dcm_ptr->stop();
+                getChar();
+                break;
             }
+
+            switch(c)
+            {
+                case 119:
+                case 65:
+                    RTE::up_kbpress();
+                break;
+
+                case 66:
+                case 115:
+                    RTE::down_kbpress();
+                break;
+
+                case 67:
+                case 100:
+                    RTE::right_kbpress();
+                break;
+
+                case 68:
+                case 97:
+                    RTE::left_kbpress();
+                break;
+
+                default:
+                    std::cout << "Char: " << c << std::endl;
+            }
+
+            c = getChar();
         }
 
-    } mgr_stack(DManager::DManager::DManagerFlags{
-        .can_skip               = true,    
-        .log_lag                = true,    
-        .target_period          = std::chrono::milliseconds(2),        
-        .delay_target_period    = std::chrono::milliseconds(0),                
-        .log_ela                = false,    
-        .name                   = "Test Manager",
-        .adress_millis          = &RTE::millis        
+        setBufferedInput(true);
     });
 
-    class : DManager::DManager {
-        using DManager::DManager::DManager;
+    dcm.launch([]{});
 
-        virtual void init_user() override
-        {
-        }
+    thr.join();
 
-        virtual void run_user() override
-        {
-            std::cout << ConsoleEngine_context.add_string(std::string(" Elapsation: ") + std::to_string(RTE::millis) + "ms", Pixel::BLACK);
-        }
+}*/
 
-    } mgr_print(DManager::DManager::DManagerFlags{
-        .can_skip               = true,    
-        .log_lag                = true,    
-        .target_period          = std::chrono::milliseconds(10),        
-        .delay_target_period    = std::chrono::milliseconds(0),                
-        .log_ela                = false,    
-        .name                   = "Test Manager",
-        .adress_millis          = nullptr        
-    });
+#include "room.hpp"
 
-
-    dcm.subscribe(&mgr_stack);
-    dcm.subscribe(&mgr_print);
-    dcm.launch();
+int main(void)
+{
+    GTC::room ro(80,420);
+    auto X = ro.retadr();
+    X();
 }
-
