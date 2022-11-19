@@ -23,39 +23,46 @@
 #include <string>
 #include <functional>
 
-namespace GTC
-{
-
 /************************************
-|* DEFINITIONS
+|* NAMESPACE GTC
 |***********************************/
+
+
 /************************************
 |* CLASS room
 |************************************
 |* @class room
 |* @brief Class manages and stores tile data
-|***********************************/
+\***********************************/
 class room
 {
-private:
-    unsigned short *tiledata;
-    unsigned int width;
-    unsigned int height;
-    void test() {std::cout << "TEST" << std::endl; std::cout << "This value is equal to " << width << std::endl;}
-public:
-    ~room() {}
-    room(const unsigned int _W, const unsigned int _H): width(_W), height(_H) {}
-    static room parseFromString(const std::string);
+    public:
+        class transition
+        {
+            private:
+                unsigned int x1, x2, y1, y2;
+                unsigned int parent_room, to_room;
+
+            public:
+                ~transition();
+                transition(const unsigned int, const unsigned int, const unsigned int, const unsigned int, const unsigned int, const unsigned int);
+
+                int in_collision(const unsigned int, const unsigned int) const;
+        };
+
+    private:
+        smart_ptr<unsigned int> tiledata;
+        std::vector<smart_ptr<gameobj>> objects;
+        std::vector<smart_ptr<transition>> transitiondata;
+        std::string name;
+        unsigned int width;
+        unsigned int height;
     
-    void (*retadr())(void)
-    {
-        auto fptr = &GTC::room::test;
-        void *out = (void*&) fptr;
-        void (GTC::room::*pp) (void) = (void (GTC::room::*&)(void)) fptr;
-        auto ret = (void (*)(void)) fptr;
-        return ret;
-    }
+    public:
+        ~room();
+        room(const unsigned int, const unsigned int);
+
+        static room parseFromString(const std::string);
 };
 
-};
 #endif

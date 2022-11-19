@@ -21,6 +21,7 @@
 #include "cutils.hpp"
 #include "mgrs.hpp"
 #include "RTE.hpp"
+#include "room.hpp"
 
 static std::thread thr;
 
@@ -102,11 +103,14 @@ static std::thread thr;
 
 }*/
 
-#include "room.hpp"
-
-int main(void)
+int main(int argc, char **argv)
 {
-    GTC::room ro(80,420);
-    auto X = ro.retadr();
-    X();
+    std::string str = "room0:\n";
+    str += argv[1];
+    try {
+        (void) GTC::room::parseFromString(str);
+    }
+    catch(const char *e) {
+        std::cerr << e << std::endl;
+    }
 }
