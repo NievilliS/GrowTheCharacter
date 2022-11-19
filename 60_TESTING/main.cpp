@@ -17,14 +17,92 @@
 |* INCLUDE
 |***********************************/
 
+#include <iostream>
+#include "cutils.hpp"
+#include "mgrs.hpp"
+#include "RTE.hpp"
 #include "room.hpp"
+
+static std::thread thr;
 
 /************************************
 |* MAIN fct
 |************************************
 |* @fn 
 |*
-\***********************************/
+|***********************************/
+/*int main(void)
+{
+    #define CE ConsoleEngine_context
+    {
+        ConsoleEngine ce(std::cout);
+        ConsoleEngine::_set_context(ce);
+    }
+
+    DManager::DControlManager dcm;
+    RTE::dcm_ptr = &dcm;
+    Mgr m;
+
+    std::cout << ERASE_DISPLAY << CURSOR_MOVE_TO(1,1) << std::flush;
+
+    dcm.subscribe(&m);
+
+    dcm.subscribe_post([]{
+        simKeyPress();
+    });
+
+    thr = std::thread([]() -> void {
+        setBufferedInput(false);
+        int c = 0;
+
+        while(RTE::dcm_ptr->is_running())
+        {
+            if(c == 'q')
+            {
+                CE << ConsoleEngine::CLEAR << "Ending by q press" << ConsoleEngine::PRINTOUT;
+                RTE::dcm_ptr->stop();
+                getChar();
+                break;
+            }
+
+            switch(c)
+            {
+                case 119:
+                case 65:
+                    RTE::up_kbpress();
+                break;
+
+                case 66:
+                case 115:
+                    RTE::down_kbpress();
+                break;
+
+                case 67:
+                case 100:
+                    RTE::right_kbpress();
+                break;
+
+                case 68:
+                case 97:
+                    RTE::left_kbpress();
+                break;
+
+                default:
+                    std::cout << "Char: " << c << std::endl;
+            }
+
+            c = getChar();
+        }
+
+        setBufferedInput(true);
+    });
+
+    dcm.launch([]{});
+
+    thr.join();
+
+}*/
+
 int main(int argc, char **argv)
 {
     std::string str = "room0:\n";
@@ -36,4 +114,3 @@ int main(int argc, char **argv)
         std::cerr << e << std::endl;
     }
 }
-

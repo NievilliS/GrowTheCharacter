@@ -5,7 +5,7 @@
 |* TESTING
 |***********************************
 |* @file room.hpp
-|* 
+|*
 |* This file is responsible for:
 |*  - Header for Room Class
 |* This file depends on:
@@ -20,15 +20,13 @@
 |* INCLUDE
 |***********************************/
 #include <iostream>
-#include <vector>
-#include "smartptr.hpp"
-#include "gameobj.hpp"
+#include <string>
+#include <functional>
 
 /************************************
 |* NAMESPACE GTC
 |***********************************/
-namespace GTC
-{
+
 
 /************************************
 |* CLASS room
@@ -67,5 +65,4 @@ class room
         static room parseFromString(const std::string);
 };
 
-};
 #endif

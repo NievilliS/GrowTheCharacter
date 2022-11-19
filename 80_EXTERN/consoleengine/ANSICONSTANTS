@@ -1,0 +1,118 @@
+/**
+ * @file ANSICONSTANTS
+ * @author David Schoosleitner (nievillis@github.com)
+ * @brief Contains aliases of ANSI controls
+ * @version 0.1
+ * @date 2022-11-13
+ * 
+ * @copyright Copyright (c) 2022 David Schoosleitner
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#pragma once
+
+#define CSI                             "\033["
+#define CURSOR_MOVE_UP_BY(n)            CSI #n "A"
+#define CURSOR_MOVE_UP                  CSI "A"
+#define CURSOR_MOVE_DOWN_BY(n)          CSI #n "B"
+#define CURSOR_MOVE_DOWN                CSI "B"
+#define CURSOR_MOVE_RIGHT_BY(n)         CSI #n "C"
+#define CURSOR_MOVE_RIGHT               CSI "C"
+#define CURSOR_MOVE_LEFT_BY(n)          CSI #n "D"
+#define CURSOR_MOVE_LEFT                CSI "D"
+#define CURSOR_MOVE_NEXT_LINE_BY(n)     CSI #n "E"
+#define CURSOR_MOVE_NEXT_LINE           CSI "E"
+#define CURSOR_MOVE_PREC_LINE_BY(n)     CSI #n "F"
+#define CURSOR_MOVE_PREC_LINE           CSI "F"
+#define CURSOR_MOVE_TO_LINE(n)          CSI #n "G"
+#define CURSOR_MOVE_TO(y,x)             CSI #y ";" #x "H"
+#define ERASE_DISPLAY_BELOW             CSI "0J"
+#define ERASE_DISPLAY_ABOVE             CSI "1J"
+#define ERASE_DISPLAY                   CSI "2J"
+#define ERASE_LINE_TO_RIGHT             CSI "0K"
+#define ERASE_LINE_TO_LEFT              CSI "1K"
+#define ERASE_LINE                      CSI "2K"
+#define INSERT_N_LINES(n)               CSI #n "L"
+#define ERASE_N_LINES(n)                CSI #n "M"
+#define ERASE_N_CHARS(n)                CSI #n "P"
+#define SAVE_CURSOR_POS                 CSI "s"
+#define RESTORE_SAVED_CURSOR_POS        CSI "u"
+
+#define COLOR_RESET                     CSI "0m"
+#define COLOR_FONT_BOLD                 CSI "1m"
+#define COLOR_FONT_UNDERLINED           CSI "4m"
+#define COLOR_FONT_INVERSE              CSI "7m"
+#define COLOR_FONT_RESET                CSI "22m"
+#define COLOR_FONT_NOT_BOLD             CSI "21m"
+#define COLOR_FONT_NOT_UNDERLINED       CSI "24m"
+#define COLOR_FONT_NOT_INVERSE          CSI "27m"
+
+#define T_BLACK                         "30"
+#define T_RED                           "31"
+#define T_GREEN                         "32"
+#define T_YELLOW                        "33"
+#define T_BLUE                          "34"
+#define T_MAGENTA                       "35"
+#define T_CYAN                          "36"
+#define T_WHITE                         "37"
+#define T_DEFAULT                       "39"
+
+#define B_BLACK                         "40"
+#define B_RED                           "41"
+#define B_GREEN                         "42"
+#define B_YELLOW                        "43"
+#define B_BLUE                          "44"
+#define B_MAGENTA                       "45"
+#define B_CYAN                          "46"
+#define B_WHITE                         "47"
+#define B_DEFAULT                       "49"
+
+#define COLORT_BLACK                    CSI T_BLACK   "m"
+#define COLORT_RED                      CSI T_RED     "m"
+#define COLORT_GREEN                    CSI T_GREEN   "m"
+#define COLORT_YELLOW                   CSI T_YELLOW  "m"
+#define COLORT_BLUE                     CSI T_BLUE    "m"
+#define COLORT_MAGENTA                  CSI T_MAGENTA "m"
+#define COLORT_CYAN                     CSI T_CYAN    "m"
+#define COLORT_WHITE                    CSI T_WHITE   "m"
+#define COLORT_DEFAULT                  CSI T_DEFAULT "m"
+
+#define COLORB_BLACK                    CSI B_BLACK   "m"
+#define COLORB_RED                      CSI B_RED     "m"
+#define COLORB_GREEN                    CSI B_GREEN   "m"
+#define COLORB_YELLOW                   CSI B_YELLOW  "m"
+#define COLORB_BLUE                     CSI B_BLUE    "m"
+#define COLORB_MAGENTA                  CSI B_MAGENTA "m"
+#define COLORB_CYAN                     CSI B_CYAN    "m"
+#define COLORB_WHITE                    CSI B_WHITE   "m"
+#define COLORB_DEFAULT                  CSI B_DEFAULT "m"
+
+#define GET_TEXT_AREA                   CSI "18t"
+#define GET_TEXT_AREA_SCREEN            CSI "19t"
+
+#ifndef ANSI_DEFAULT_STREAM
+#define ANSI_DEFAULT_STREAM             std::cout
+#endif
+
+#ifndef ANSI_DEFAULT_FLUSH
+#define ANSI_DEFAULT_FLUSH              std::flush;
+#endif
+
+#define ACO(command)                    ANSI_DEFAULT_STREAM << command << ANSI_DEFAULT_FLUSH;
