@@ -65,17 +65,19 @@ namespace Pixel
         inline bool operator==(const ColorType &ct) {return this->signature == ct.signature;}
         inline bool operator!=(const ColorType &ct) {return this->signature != ct.signature;}
 
-    } const TEXT(0), BACKGROUND(1);
+    } const inline TEXT(0), BACKGROUND(1);
 
     struct Color
     {
     private:
+        inline static __UINT8_TYPE__ _stat_signature;
+        inline static std::vector<Color*> _stor;
         __UINT8_TYPE__ signature;
         std::string linked_tcontrols;
         std::string linked_bcontrols;
     
     public:
-        Color(const __UINT8_TYPE__ _signature, const std::string _linked_tcontrols, const std::string _linked_bcontrols): signature(_signature), linked_tcontrols(_linked_tcontrols), linked_bcontrols(_linked_bcontrols) {}
+        Color(const __UINT8_TYPE__ _signature, const std::string _linked_tcontrols, const std::string _linked_bcontrols): signature(_signature), linked_tcontrols(_linked_tcontrols), linked_bcontrols(_linked_bcontrols) {if(_signature < _stat_signature && _stat_signature > 0) throw std::runtime_error(std::string("Signature ") + std::to_string(_signature) + " is already taken"); _stat_signature = _signature; _stor.push_back(this);}
         Color(const Color &ct): signature(ct.signature), linked_tcontrols(ct.linked_tcontrols), linked_bcontrols(ct.linked_bcontrols) {}
         inline int operator<<(const int shift) const {return ((int) signature) << shift;}
         inline Color &operator=(const Color &ct) {this->signature = ct.signature; this->linked_tcontrols = ct.linked_tcontrols; this->linked_bcontrols = ct.linked_bcontrols; return *this;}
@@ -83,8 +85,15 @@ namespace Pixel
         inline bool operator!=(const Color &ct) {return this->signature != ct.signature;}
         inline std::string get_tcontrols() const {return this->linked_tcontrols;}
         inline std::string get_bcontrols() const {return this->linked_bcontrols;}
+        inline static Color *find_color(const __UINT8_TYPE__ val)
+        {
+            for(auto i = _stor.begin(); i != _stor.end(); i++)
+                if((*i)->signature == val)
+                    return *i;
+            return nullptr;
+        }
     }
-        const BLACK(      0,  COLORT_BLACK,   COLORB_BLACK),
+        const inline BLACK(      0,  COLORT_BLACK,   COLORB_BLACK),
         RED(        1,  COLORT_RED,     COLORB_RED),
         GREEN(      2,  COLORT_GREEN,   COLORB_GREEN),
         YELLOW(     3,  COLORT_YELLOW,  COLORB_YELLOW),
@@ -111,7 +120,7 @@ namespace Pixel
         inline int operator&(const Font &ct) const {return this->signature & ct.signature;}
 
     }
-        const NORMAL(       0   ),
+        const inline NORMAL(       0   ),
         BOLD(               1   ),
         UNDERLINED(         2   ),
         BOLD_UNDERLINED(    3   ),
@@ -123,7 +132,7 @@ namespace Pixel
 
     typedef const std::function<void(const size_t, char &, ColorType &, Color &, Font &)> pixel_lambda; 
 
-    inline static const Color &int_to_color(const __UINT8_TYPE__ val)
+    /*inline static const Color &int_to_color(const __UINT8_TYPE__ val)
     {
         switch(val)
         {
@@ -145,7 +154,7 @@ namespace Pixel
                 return WHITE;
         }
         return DEFAULT;
-    }
+    }*/
 
     inline static const Font &int_to_font(const __UINT8_TYPE__ val)
     {
@@ -194,9 +203,9 @@ namespace Pixel
         return (character > 0uc) ? (character | (TEXT << 8) | (DEFAULT << 9) | (font << 13)) : 0us;
     }
 
-    inline static Color get_pixel_color(const Pixel_t pixel)
+    inline static Color *get_pixel_color(const Pixel_t pixel)
     {
-        return int_to_color(((__UINT8_TYPE__)(pixel >> 9)) & 0x0Fuc);
+        return Color::find_color(((__UINT8_TYPE__)(pixel >> 9)) & 0x0Fuc);
     }
 
     inline static void set_pixel_color(Pixel_t &pixel, const Color &color)
@@ -280,7 +289,7 @@ namespace Pixel
         static Color old_color = DEFAULT;
         static ColorType old_type = TEXT;
         static Font old_font = NORMAL;
-        Color now_color = get_pixel_color(pixel);
+        Color now_color = *get_pixel_color(pixel);
         Font now_font = get_pixel_font(pixel);
 
         if(old_color != now_color && get_pixel_color_type(pixel) == TEXT)
@@ -469,7 +478,7 @@ namespace Pixel
         {
             char character = get_pixel_char(p);
             ColorType color_type = get_pixel_color_type(p);
-            Color color = get_pixel_color(p);
+            Color color = *get_pixel_color(p);
             Font font = get_pixel_font(p);
             lambda_function(i++, character, color_type, color, font);
             p = create_pixel(character, color_type, color, font);
@@ -487,7 +496,7 @@ namespace Pixel
             Pixel_t &p = pixel_dest.at(i);
             char character = get_pixel_char(p);
             ColorType color_type = get_pixel_color_type(p);
-            Color color = get_pixel_color(p);
+            Color color = *get_pixel_color(p);
             Font font = get_pixel_font(p);
             lambda_function(i++, character, color_type, color, font);
             p = create_pixel(character, color_type, color, font);
@@ -500,7 +509,7 @@ namespace Pixel
         {
             char character = get_pixel_char(pixel_dest[i]);
             ColorType color_type = get_pixel_color_type(pixel_dest[i]);
-            Color color = get_pixel_color(pixel_dest[i]);
+            Color color = *get_pixel_color(pixel_dest[i]);
             Font font = get_pixel_font(pixel_dest[i]);
             lambda_function(i, character, color_type, color, font);
             pixel_dest[i] = create_pixel(character, color_type, color, font);

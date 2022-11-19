@@ -14,7 +14,7 @@ public:
     rcharobj(const int x, const int y, const char c): robj(x, y, 1, 1), chr(c), col(Pixel::DEFAULT) {}
     rcharobj(const int x, const int y, const char c, const Pixel::Color col): robj(x, y, 1, 1), chr(c), col(col) {}
 
-    inline virtual pixelstr draw() override
+    inline virtual pixelstr draw(unsigned long long tick) override
     {
         pixelstr ps;
         ps += Pixel::create_pixel(chr, col);

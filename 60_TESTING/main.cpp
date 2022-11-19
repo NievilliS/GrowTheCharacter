@@ -31,7 +31,7 @@ static std::thread thr;
 |* @fn 
 |*
 |***********************************/
-/*int main(void)
+int main(void)
 {
     #define CE ConsoleEngine_context
     {
@@ -101,9 +101,9 @@ static std::thread thr;
 
     thr.join();
 
-}*/
+}
 
-int main(int argc, char **argv)
+/*int main(int argc, char **argv)
 {
     std::string str = "room0:\n";
     str += argv[1];
@@ -113,4 +113,4 @@ int main(int argc, char **argv)
     catch(const char *e) {
         std::cerr << e << std::endl;
     }
-}
+}*/

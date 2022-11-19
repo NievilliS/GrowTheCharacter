@@ -94,13 +94,16 @@ private:
     std::condition_variable cv;                             //< Used to pause thread
     std::mutex mutex;                                       //< Mutex is responsible for thread control
     std::thread thread;                                     //< Working thread
+
+protected:
     std::atomic<int> running;                               //< Atomic: If a tick is now running
     std::atomic<int> terminated;                            //< Atomic: If the thread has been terminated
     std::atomic<int> milli_last_ela;                        //< Atomic: How long the last tick has taken
     std::atomic<int> canrun;                                //< Atomic: If initialization is done
-    const struct DManagerFlags flags;                       //< Control flags for manager
     std::chrono::steady_clock::time_point schedule;         //< Next schedule to be executed at
+    const struct DManagerFlags flags;                       //< Control flags for manager
 
+private:
     /**
      * @fn bool DManager::DManager::wait_for()
      * @brief Wait for is called by DManager::run
