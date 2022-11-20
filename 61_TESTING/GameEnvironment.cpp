@@ -49,7 +49,7 @@ gameenv::gameenv():
     m_graphicsmgr{this},
     m_physicsmgr{this},
     m_active_room(nullptr),
-    m_controls_thread{ [&] -> void {
+    m_controls_thread{ [&] {
         setBufferedInput(false);
         int c = 0;
 
@@ -57,7 +57,7 @@ gameenv::gameenv():
         {
             if(c == 'q')
             {
-                ConsoleEngine_context << ConsoleEngine::CLEAR << ConsoleEngine::ERASE_SCREEN << "Ending by q press" << ConsoleEngine::PRINTOUT;
+                ConsoleEngine_context << ConsoleEngine::CLEAR << ConsoleEngine::ERASE_SCREEN << "Ending by ESC press" << ConsoleEngine::PRINTOUT;
                 this->m_dcm.stop();
                 getchar();
                 break;
@@ -84,9 +84,6 @@ gameenv::gameenv():
                 case 97:
                     this->left_kbpress();
                 break;
-
-                default:
-                    std::cout << "Char: " << c << std::endl;
             }
 
             c = getchar();
@@ -97,15 +94,10 @@ gameenv::gameenv():
 {
     m_dcm.subscribe(&m_graphicsmgr);
     m_dcm.subscribe(&m_physicsmgr);
-    m_dcm.subscribe_post(simKeyPress);
+    m_dcm.subscribe_post([&]{simKeyPress(); this->m_controls_thread.join();});
 }
 
-void gameenv::subscribe_new_room(room *&&_room)
+void gameenv::launch()
 {
-    this->m_room_storage.push_back(std::unique_ptr<room>(_room));
-}
-
-room *gameenv::get_active_room()
-{
-    return this->m_active_room;
+    this->m_dcm.launch();
 }

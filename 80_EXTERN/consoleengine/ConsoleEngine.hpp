@@ -199,7 +199,7 @@ public:
     friend inline std::ostream &operator<<(std::ostream &o, ConsoleEngine &ce)
     {
         ce.erase_screen();
-        return o << ce.get_cursor_string() << ce.sync() << COLOR_RESET << std::endl;
+        return o << ce.get_cursor_string() << ce.sync() << COLOR_RESET << std::flush;
     }
 
 private:

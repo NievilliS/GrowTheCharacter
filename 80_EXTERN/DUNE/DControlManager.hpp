@@ -129,7 +129,7 @@ public:
             if((*i)->in_schedule())
                 (*i)->notify();
         }}
-        this->call_termination();
+        //this->call_termination();
         
         for(auto i = post_terminate.begin(); i != post_terminate.end(); i++)
         {

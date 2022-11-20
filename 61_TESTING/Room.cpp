@@ -33,7 +33,7 @@ void room::add_obj(robj *obj)
     this->objs.push_back(std::unique_ptr<robj>(obj));
 }
 
-void room::draw()
+void room::draw(unsigned long long tick)
 {
     ConsoleEngine_context << ConsoleEngine::CLEAR <<
         this->background_color.get_bcontrols() << "";
@@ -45,13 +45,15 @@ void room::draw()
         ConsoleEngine_context << (*i)->get_coord_str() << (*i)->draw(tick);
     }
 
-    ConsoleEngine_context << ConsoleEngine::PRINTOUT;
+    ConsoleEngine_context << CURSOR_MOVE_TO(1,1) << ConsoleEngine::PRINTOUT;
 }
 
-void room::physics()
+void room::physics(unsigned long long tick)
 {
-    
-    tick++;
+    for(auto i = this->objs.begin(); i != objs.end(); i++)
+    {
+        (*i)->physics(tick);
+    }
 }
 
 v2 room::get_pixelstr_dim(const pixelstr &bdat)
@@ -85,4 +87,16 @@ void room::set_background_color(const Pixel::Color &bgr)
 void room::set_foreground_color(const Pixel::Color &bgr)
 {
     this->foreground_color = bgr;
+}
+
+int room::collision_with_base(rplayerobj *rpo)
+{
+    switch(Pixel::get_pixel_char(this->base_dat[rpo->coords().hori + rpo->coords().vert * (this->size.hori + 1)]))
+    {
+        case '#':
+            return 1;
+        case ' ':
+            return 0;
+    }
+    return 2;
 }

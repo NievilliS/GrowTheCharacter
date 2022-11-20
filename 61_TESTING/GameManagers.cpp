@@ -23,8 +23,11 @@ void graphicsmgr::init_user()
 void graphicsmgr::run_user()
 {
     gameenv &ge = *(gameenv*) env_ptr;
-
-
+    room *rm = ge.get_active_room();
+    if(rm != nullptr)
+    {
+        rm->draw(ge.get_tick());
+    }
 }
 
 /** PHYSICS MANAGER STUFF **/
@@ -50,8 +53,9 @@ void physicsmgr::init_user()
 void physicsmgr::run_user()
 {
     gameenv &ge = *(gameenv*) env_ptr;
-    if(ge.get_active_room() != nullptr)
+    room *rm = ge.get_active_room();
+    if(rm != nullptr)
     {
-        
+        rm->physics(ge.iterate_tick());
     }
 }

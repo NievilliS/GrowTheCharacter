@@ -38,6 +38,7 @@ private:
     /** MISCELLANEOUS **/
     std::thread m_controls_thread;
     std::atomic<int> m_keymap;
+    unsigned long long m_tick;
 
 public:
     gameenv();
@@ -49,8 +50,11 @@ public:
     _keypress_fcts_make(right, KEY_RIGHT_BIT);
 
     /** PRE GAME **/
-    void subscribe_new_room(room *&&_room);
-    room *get_active_room();
+    inline void subscribe_new_room(room *&&_room) {this->m_room_storage.push_back(std::unique_ptr<room>(_room));}
+    inline room *get_active_room() {return this->m_active_room;}
+    inline void set_active_room(const std::size_t index) {this->m_active_room = m_room_storage[index].get();}
+    inline unsigned long long get_tick() {return this->m_tick;}
+    inline unsigned long long iterate_tick() {return this->m_tick++;}
     void launch();
 
 };
