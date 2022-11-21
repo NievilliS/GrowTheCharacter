@@ -9,8 +9,9 @@ private:
 
 public:
     rspinnyobj(const int x, const int y, const char c, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col), xy{y, x + 1} {}
+    rspinnyobj(const int x, const int y, const char c, const LAYER l, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col, l), xy{y, x + 1} {}
 
-    inline virtual std::string get_coord_str() {return std::string(CSI) + std::to_string(xy.vert + 1) + ';' + std::to_string(xy.hori + 1) + 'H';}
+    inline virtual pixelstr get_coord_str() override {pixelstr ps; std::string s = std::string(CSI) + std::to_string(xy.vert + 1) + ';' + std::to_string(xy.hori + 1) + 'H'; Pixel::copy_string_to_pixel_string(ps, s); return ps;}
 
     inline virtual void physics(unsigned long long tick) override
     {
@@ -35,6 +36,11 @@ public:
             break; case 7:
                 xy = cr + v2{-1,1};
         }
+    }
+
+    inline v2 real_coords()
+    {
+        return xy;
     }
 
 };

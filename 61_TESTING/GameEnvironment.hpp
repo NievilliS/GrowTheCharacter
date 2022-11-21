@@ -1,8 +1,8 @@
 #pragma once
 
 #include <DUNE/DControlManager.hpp>
-#include "Room.hpp"
-#include "RObj.hpp"
+#include "objects/Room.hpp"
+#include "objects/RObj.hpp"
 #include "GameManagers.hpp"
 
 /** MACRO TOOLS **/

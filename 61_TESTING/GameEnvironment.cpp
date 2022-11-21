@@ -57,7 +57,7 @@ gameenv::gameenv():
         {
             if(c == 'q')
             {
-                ConsoleEngine_context << ConsoleEngine::CLEAR << ConsoleEngine::ERASE_SCREEN << "Ending by ESC press" << ConsoleEngine::PRINTOUT;
+                ConsoleEngine_context << ConsoleEngine::CLEAR << ConsoleEngine::ERASE_SCREEN << Pixel::BLACK << "Ending by ESC press\n" << ConsoleEngine::PRINTOUT;
                 this->m_dcm.stop();
                 getchar();
                 break;
