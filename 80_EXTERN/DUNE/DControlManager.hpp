@@ -82,13 +82,11 @@ public:
      */
     ~DControlManager()
     {
-        call_termination();
     }
 
     /**
      * @fn void DManager::DControlManager::call_termination()
      * @brief Invokes termination of all manager members
-     * @deprecated Not required as managers are automatically terminated and their threads freed upon destruction.
      */
     void call_termination()
     {
@@ -129,7 +127,7 @@ public:
             if((*i)->in_schedule())
                 (*i)->notify();
         }}
-        //this->call_termination();
+        this->call_termination();
         
         for(auto i = post_terminate.begin(); i != post_terminate.end(); i++)
         {

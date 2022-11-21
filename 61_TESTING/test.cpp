@@ -16,7 +16,7 @@ int main(void)
         "############"
     ;
 
-    pixelstr ps;
+    pixelstr ps{};
     Pixel::copy_string_to_pixel_string(ps, st, [](auto a, auto &b, auto &c, auto &d, auto &e){
         d = Pixel::WHITE;
         if(b == '#')
@@ -28,11 +28,12 @@ int main(void)
     room *env_room = genv.get_active_room();
     env_room->set_background_color(Pixel::BLACK);
     env_room->set_base_dat_str(ps);
-    for(int i = 0; i < 4; i++)
-        env_room->add_obj(new rspeedbump(rspeedbump::RIGHT, 4 + i, 3));
-    env_room->add_obj(new rplayerobj(&genv, 1, 1, '@'));
-    env_room->add_obj(new rspinnyobj(4, 4, 'o', robj::F2));
+    
+    for(int x = 1; x < env_room->getsize().hori; x += 4)
+    for(int y = 1; y < env_room->getsize().vert; y += 4)
+    env_room->add_obj(new rspinnyobj(x, y, 'o', (x+y) % 4 + 4, (x+y)%8, robj::F2, ((x+y) % 2 == 0) ? Pixel::BLUE : Pixel::GREEN));
 
     genv.launch();
+
     return 0;
 }

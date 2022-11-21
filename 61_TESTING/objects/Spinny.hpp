@@ -6,18 +6,20 @@ class rspinnyobj : public rcharobj
 {
 private:
     v2 xy;
+    int period;
+    int offset;
 
 public:
-    rspinnyobj(const int x, const int y, const char c, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col), xy{y, x + 1} {}
-    rspinnyobj(const int x, const int y, const char c, const LAYER l, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col, l), xy{y, x + 1} {}
+    rspinnyobj(const int x, const int y, const char c, const int period, const int offset, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col), xy{y, x + 1}, period(period), offset(offset) {}
+    rspinnyobj(const int x, const int y, const char c, const int period, const int offset, const LAYER l, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col, l), xy{y, x + 1}, period(period), offset(offset) {}
 
-    inline virtual pixelstr get_coord_str() override {pixelstr ps; std::string s = std::string(CSI) + std::to_string(xy.vert + 1) + ';' + std::to_string(xy.hori + 1) + 'H'; Pixel::copy_string_to_pixel_string(ps, s); return ps;}
+    inline virtual pixelstr get_coord_str() override {pixelstr ps{}; std::string s = std::string(CSI) + std::to_string(xy.vert + 1) + ';' + std::to_string(xy.hori + 1) + 'H'; Pixel::copy_string_to_pixel_string(ps, s); return ps;}
 
     inline virtual void physics(unsigned long long tick) override
     {
-        auto period = (tick / 4) % 8;
+        auto now = (offset + (tick / period)) % 8;
 
-        switch(period)
+        switch(now)
         {
             case 0:
                 xy = cr + v2{0,1};
@@ -38,9 +40,6 @@ public:
         }
     }
 
-    inline v2 real_coords()
-    {
-        return xy;
-    }
+    inline virtual v2 &coords() {return xy;}
 
 };

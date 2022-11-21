@@ -3,7 +3,7 @@
 class reventqueue
 {
 protected:
-    bool runned = true;
+    bool runned = false;
     const unsigned long long tick_schedule;
     const std::function<void()> fct;
     reventqueue(const unsigned long long _tick_schedule, const std::function<void()> _fct):

@@ -32,16 +32,18 @@ private:
     physicsmgr m_physicsmgr;
     
     /** ROOM OBJECT STORAGE **/
-    std::vector<std::unique_ptr<room>> m_room_storage;
-    room *m_active_room;
+    std::vector<room*> m_room_storage;
+    room *m_active_room = nullptr;
 
     /** MISCELLANEOUS **/
     std::thread m_controls_thread;
-    std::atomic<int> m_keymap;
-    unsigned long long m_tick;
+    std::atomic<int> m_keymap = 0;
+    unsigned long long m_tick = 0ULL;
+    bool m_running = true;
 
 public:
     gameenv();
+    ~gameenv();
 
     /** KEYPRESS MACRO DECLARATIONS **/
     _keypress_fcts_make(up, KEY_UP_BIT);
@@ -50,11 +52,14 @@ public:
     _keypress_fcts_make(right, KEY_RIGHT_BIT);
 
     /** PRE GAME **/
-    inline void subscribe_new_room(room *&&_room) {this->m_room_storage.push_back(std::unique_ptr<room>(_room));}
+    inline void subscribe_new_room(room *&&_room) {this->m_room_storage.push_back(_room);}
     inline room *get_active_room() {return this->m_active_room;}
-    inline void set_active_room(const std::size_t index) {this->m_active_room = m_room_storage[index].get();}
+    inline void set_active_room(const std::size_t index) {this->m_active_room = m_room_storage[index];}
     inline unsigned long long get_tick() {return this->m_tick;}
     inline unsigned long long iterate_tick() {return this->m_tick++;}
+    void stop();
+    void register_event_current(const unsigned long long delay, const std::function<void()> fct);
     void launch();
+    void debug_join() {this->m_controls_thread.join();}
 
 };

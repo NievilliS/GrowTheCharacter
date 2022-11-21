@@ -87,7 +87,7 @@ public:
         const std::chrono::milliseconds delay_target_period;            //< 4: Target delay; it acts as an offset
         const bool log_ela;                                             //< 5: Call std::cout for every elapsed time per tick
         const std::string name;                                         //< 6: Name used in log calls.
-        const int *adress_millis;                                       //< 7: Address to store millis elapse into.
+        int *adress_millis;                                             //< 7: Address to store millis elapse into.
     };
 
 private:
@@ -96,12 +96,12 @@ private:
     std::thread thread;                                     //< Working thread
 
 protected:
-    std::atomic<int> running;                               //< Atomic: If a tick is now running
-    std::atomic<int> terminated;                            //< Atomic: If the thread has been terminated
-    std::atomic<int> milli_last_ela;                        //< Atomic: How long the last tick has taken
-    std::atomic<int> canrun;                                //< Atomic: If initialization is done
+    std::atomic<int> running = 0;                           //< Atomic: If a tick is now running
+    std::atomic<int> terminated = 0;                        //< Atomic: If the thread has been terminated
+    std::atomic<int> milli_last_ela = 0;                    //< Atomic: How long the last tick has taken
+    std::atomic<int> canrun = 0;                            //< Atomic: If initialization is done
     std::chrono::steady_clock::time_point schedule;         //< Next schedule to be executed at
-    const struct DManagerFlags flags;                       //< Control flags for manager
+    struct DManagerFlags flags;                             //< Control flags for manager
 
 private:
     /**
@@ -165,6 +165,7 @@ public:
         if(this->terminated == 0)
         {
             this->terminated = 1;
+            this->cv.notify_one();
             this->cv.notify_one();
             this->thread.join();
             #ifdef DMANAGER_PRINT_DEBUG
@@ -267,6 +268,7 @@ public:
         if(this->terminated == 0)
         {
             this->terminated = 1;
+            this->cv.notify_one();
             this->cv.notify_one();
             this->thread.join();
             #ifdef DMANAGER_PRINT_DEBUG

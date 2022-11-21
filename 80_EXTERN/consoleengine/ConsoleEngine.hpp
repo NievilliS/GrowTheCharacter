@@ -38,7 +38,7 @@
 class ConsoleEngine
 {
 protected:
-    pixelstr m_content;
+    pixelstr m_content{};
     std::mutex m_mutex;
     std::ostream *m_stream;
     int m_start_x = 1;
@@ -136,7 +136,7 @@ public:
         const Pixel::ColorType &color_type = Pixel::TEXT,
         const Pixel::Font &font = Pixel::NORMAL
     ) {
-        pixelstr ps;
+        pixelstr ps{};
         Pixel::copy_string_to_pixel_string_par(ps, str,
             [&](const size_t _index, char &_ch, Pixel::ColorType &_type, Pixel::Color &_col, Pixel::Font &_font)
             {

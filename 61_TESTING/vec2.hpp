@@ -28,6 +28,10 @@ public:
     inline bool operator<(const v2 &v) const {return this->vert < v.vert && this->hori < v.hori;}
     inline bool operator>>(const v2 &v) const {return this->vert + this->hori > v.vert + v.hori;}
     inline bool operator>(const v2 &v) const {return this->vert >> v.vert && this->hori >> v.hori;}
+    inline bool operator<=(const v2 &v) const {return this->vert <= v.vert && this->hori <= v.hori;}
+    inline bool operator>=(const v2 &v) const {return this->vert >= v.vert && this->hori >= v.hori;}
+    inline bool operator<<=(const v2 &v) const {return this->vert + this->hori <= v.vert + v.hori;}
+    inline bool operator>>=(const v2 &v) const {return this->vert + this->hori >= v.vert + v.hori;}
 };
 
 #endif //_GTC_VEC2_HPP

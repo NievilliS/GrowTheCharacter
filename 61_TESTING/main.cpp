@@ -18,7 +18,7 @@ int main(void)
         "############"
     ;
 
-    pixelstr ps;
+    pixelstr ps{};
     Pixel::copy_string_to_pixel_string(ps, st, [](auto a, auto &b, auto &c, auto &d, auto &e){
         d = a % 2 ? Pixel::RED : Pixel::Extensions::DARK_RED;
     });

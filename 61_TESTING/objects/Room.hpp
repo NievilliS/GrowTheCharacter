@@ -4,23 +4,27 @@
 #include "RObj.hpp"
 #include "Player.hpp"
 #include "EventQueue.hpp"
+#include <atomic>
 #include <memory>
 
 class room
 {
 private:
-    pixelstr base_dat;
+    pixelstr base_dat{};
     Pixel::Color background_color;
     Pixel::Color foreground_color;
     v2 size;
-    std::vector<std::shared_ptr<robj>> objs;
-    std::vector<std::shared_ptr<reventqueue>> event_queue;
+    std::vector<robj*> objs;
+    std::vector<reventqueue*> event_queue;
     unsigned long long triggers = 0ULL;
     unsigned long long next_trigger = 0ULL;
 
 public:
+    int x = 0;
+    int y = 0;
     std::string debug;
     room();
+    ~room();
     
     void set_base_dat_str(pixelstr &bdat);
     void add_obj(robj *obj);
@@ -38,7 +42,7 @@ public:
         std::vector<T*> vct;
         for(auto i = this->objs.begin(); i != objs.end(); i++)
         {
-            T* pt = dynamic_cast<T*>((*i).get());
+            T* pt = dynamic_cast<T*>(*i);
             if(pt != nullptr)
                 vct.push_back(pt);
         }

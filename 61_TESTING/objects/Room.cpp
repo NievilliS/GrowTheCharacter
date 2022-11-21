@@ -30,11 +30,13 @@ void room::set_base_dat_str(pixelstr &bdat)
 
 void room::add_obj(robj *obj)
 {
-    this->objs.push_back(std::unique_ptr<robj>(obj));
+    this->objs.push_back(obj);
 }
 
 void room::draw(unsigned long long tick)
 {
+    debug = COLORT_BLACK "Draw last took: " + std::to_string(x) + "\nPhys last took: " + std::to_string(y);
+
     ConsoleEngine_context << ConsoleEngine::CLEAR <<
         this->background_color.get_bcontrols() << "";
     
@@ -44,25 +46,25 @@ void room::draw(unsigned long long tick)
 
     for(auto i = this->objs.begin(); i != objs.end(); i++)
     {
-        switch((*i)->layer())
-        {
-            case robj::B2:
-                str_B2 += (*i)->get_coord_str() + (*i)->draw(tick);
-            case robj::B1:
-                str_B1 += (*i)->get_coord_str() + (*i)->draw(tick);
-            case robj::F1:
-                str_F1 += (*i)->get_coord_str() + (*i)->draw(tick);
-            case robj::F2:
-                str_F2 += (*i)->get_coord_str() + (*i)->draw(tick);
-            case robj::F3:
-                str_F3 += (*i)->get_coord_str() + (*i)->draw(tick);
-            case robj::F4:
-                str_F4 += (*i)->get_coord_str() + (*i)->draw(tick);
-            case robj::D:
-            default:
-                str_D += (*i)->get_coord_str() + (*i)->draw(tick);
-
-        }
+        if((*i)->coords() >= v2{0,0} && (*i)->coords() < this->size)
+            switch((*i)->layer())
+            {
+                case robj::B2:
+                    str_B2 += (*i)->get_coord_str() + (*i)->draw(tick);
+                case robj::B1:
+                    str_B1 += (*i)->get_coord_str() + (*i)->draw(tick);
+                case robj::F1:
+                    str_F1 += (*i)->get_coord_str() + (*i)->draw(tick);
+                case robj::F2:
+                    str_F2 += (*i)->get_coord_str() + (*i)->draw(tick);
+                case robj::F3:
+                    str_F3 += (*i)->get_coord_str() + (*i)->draw(tick);
+                case robj::F4:
+                    str_F4 += (*i)->get_coord_str() + (*i)->draw(tick);
+                case robj::D:
+                default:
+                    str_D += (*i)->get_coord_str() + (*i)->draw(tick);
+            }
     }
 
     ConsoleEngine_context <<
@@ -83,7 +85,7 @@ void room::physics(unsigned long long tick)
 
     //!! Event queue handle
     {
-        std::vector<std::vector<std::shared_ptr<reventqueue>>::iterator> indices;
+        std::vector<std::vector<reventqueue*>::iterator> indices;
         for(auto i = this->event_queue.begin(); i != event_queue.end(); i++)
         {
             if((*i)->check_run(tick))
@@ -105,7 +107,7 @@ void room::physics(unsigned long long tick)
 
 v2 room::get_pixelstr_dim(const pixelstr &bdat)
 {
-    int w;
+    int w = 0;
     v2 wh{0,0};
     const size_t pss = bdat.size();
 
@@ -150,7 +152,7 @@ int room::collision_with_base(rplayerobj *rpo)
 
 void room::register_event(const unsigned long long tick, const std::function<void()> fct)
 {
-    event_queue.push_back(std::unique_ptr<reventqueue>(reventqueue::make(tick, fct)));
+    event_queue.push_back(reventqueue::make(tick, fct));
 }
 
 void room::run_trigger(int ID)
@@ -163,3 +165,17 @@ bool room::is_triggered(int ID)
     return (this->triggers & (1 << ID)) > 0;
 }
 
+room::~room()
+{
+    for(std::vector<robj*>::iterator i = this->objs.begin(); i != this->objs.end(); i++)
+    {
+        delete *i;
+    }
+    this->objs.clear();
+
+    for(std::vector<reventqueue*>::iterator i = this->event_queue.begin(); i != this->event_queue.end(); i++)
+    {
+        delete *i;
+    }
+    this->event_queue.clear();
+}

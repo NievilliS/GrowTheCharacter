@@ -19,7 +19,7 @@ public:
 
     inline virtual pixelstr draw(unsigned long long tick) override
     {
-        pixelstr ps;
+        pixelstr ps{};
         ps += Pixel::create_pixel(chr, col);
         return ps;
     }

@@ -24,9 +24,9 @@ public:
 
     inline virtual pixelstr draw(unsigned long long tick) {return pixelstr();}
     inline virtual void physics(unsigned long long tick) {}
-    inline virtual pixelstr get_coord_str() {pixelstr ps; std::string s = std::string(CSI) + std::to_string(cr.vert + 1) + ';' + std::to_string(cr.hori + 1) + 'H'; Pixel::copy_string_to_pixel_string(ps, s); return ps;}
+    inline virtual pixelstr get_coord_str() {pixelstr ps{}; std::string s = std::string(CSI) + std::to_string(cr.vert + 1) + ';' + std::to_string(cr.hori + 1) + 'H'; Pixel::copy_string_to_pixel_string(ps, s); return ps;}
 
-    inline v2 &coords() {return cr;}
+    inline virtual v2 &coords() {return cr;}
     inline v2 &size() {return wh;}
     inline LAYER &layer() {return lay;}
 };

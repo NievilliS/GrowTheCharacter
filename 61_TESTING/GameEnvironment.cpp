@@ -53,12 +53,12 @@ gameenv::gameenv():
         setBufferedInput(false);
         int c = 0;
 
-        while(this->m_dcm.is_running())
+        while(this->m_running && this->m_dcm.is_running())
         {
             if(c == 'q')
             {
                 ConsoleEngine_context << ConsoleEngine::CLEAR << ConsoleEngine::ERASE_SCREEN << Pixel::BLACK << "Ending by ESC press\n" << ConsoleEngine::PRINTOUT;
-                this->m_dcm.stop();
+                this->stop();
                 getchar();
                 break;
             }
@@ -100,4 +100,24 @@ gameenv::gameenv():
 void gameenv::launch()
 {
     this->m_dcm.launch();
+}
+
+gameenv::~gameenv()
+{
+    for(std::vector<room*>::iterator i = m_room_storage.begin(); i != m_room_storage.end(); i++)
+    {
+        delete *i;
+    }
+    m_room_storage.clear();
+}
+
+void gameenv::register_event_current(const unsigned long long delay, const std::function<void()> fct)
+{
+    this->m_active_room->register_event(this->m_tick + delay, fct);
+}
+
+void gameenv::stop()
+{
+    this->m_running = false;
+    this->m_dcm.stop();
 }

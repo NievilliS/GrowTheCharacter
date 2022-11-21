@@ -524,7 +524,7 @@ inline static std::ostream &operator<<(std::ostream &o, pixelstr ps)
 
 inline static pixelstr operator "" ps(const char *c, size_t size)
 {
-    pixelstr ps;
+    pixelstr ps{};
     for(size_t i = 0ULL; i < size; i++)
         ps += Pixel::create_pixel(c[i]);
     return ps;
