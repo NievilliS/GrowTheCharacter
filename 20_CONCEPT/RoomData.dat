@@ -1,14 +1,13 @@
 # Room concept and data
 
-list: auto
-end
-
 index:
-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~#'{[]}@€\^°
+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~'{[]}@€\^°
 end
 
 level0:
 room0:
+name: Test
+tiles:
                   
  ################ 
  #        #     # 
@@ -26,25 +25,6 @@ room0:
  #  _ #\\\\# 1  # 
  ######    ###  # 
        1111   33  
-gsub:
-< 
-. 
-+ 
-/ 
-\ 
-_ 
-x 
-X 
-#a
 end
-class:
-start 2 2
-area 5 5 11 7 speedl x y
-jumpa 2 6 2 10
-jumpb 2 10
-tbtn 3 13 8 0 1
-area 5 9 5 10 drwall x y 0 1
-area 6 11 9 11 swall x y 2 2 0
-area 6 13 9 13 swall x y 2 2 2
-area 10 9 10 12 dwall x y 2
-area 
+endroom
+endlevel

@@ -32,7 +32,7 @@ CCFLAGS := -Wno-literal-suffix -I./80_EXTERN/ -lX11 -lXtst -g
 ### SOURCE/OBJ DEFINITIONS ###
 
 # Source Files, You may edit these to include files!
-SOURCES_OBJS := Room.cpp Player.cpp 
+SOURCES_OBJS := Utils.cpp Room.cpp Player.cpp DisappearingWall.cpp
 SOURCES := test.cpp GameManagers.cpp GameEnvironment.cpp $(SOURCES_OBJS:%=objects/%)
 
 # Check if sources not empty

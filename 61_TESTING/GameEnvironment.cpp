@@ -5,6 +5,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
+#include "objects/Utils.hpp"
 
 inline void simKeyPress()
 {
@@ -48,7 +49,7 @@ inline void setBufferedInput(bool enable)
 gameenv::gameenv():
     m_graphicsmgr{this},
     m_physicsmgr{this},
-    m_active_room(nullptr),
+    m_active_level(nullptr),
     m_controls_thread{ [&] {
         setBufferedInput(false);
         int c = 0;
@@ -92,6 +93,7 @@ gameenv::gameenv():
         setBufferedInput(true);
     }}
 {
+    Utils::init(this);
     m_dcm.subscribe(&m_graphicsmgr);
     m_dcm.subscribe(&m_physicsmgr);
     m_dcm.subscribe_post([&]{simKeyPress(); this->m_controls_thread.join();});
@@ -104,16 +106,16 @@ void gameenv::launch()
 
 gameenv::~gameenv()
 {
-    for(std::vector<room*>::iterator i = m_room_storage.begin(); i != m_room_storage.end(); i++)
+    for(std::vector<level*>::iterator i = m_level_storage.begin(); i != m_level_storage.end(); i++)
     {
         delete *i;
     }
-    m_room_storage.clear();
+    m_level_storage.clear();
 }
 
 void gameenv::register_event_current(const unsigned long long delay, const std::function<void()> fct)
 {
-    this->m_active_room->register_event(this->m_tick + delay, fct);
+    this->m_active_level->register_event_current(this->m_tick + delay, fct);
 }
 
 void gameenv::stop()

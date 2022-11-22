@@ -16,6 +16,8 @@ private:
     v2 size;
     std::vector<robj*> objs;
     std::vector<reventqueue*> event_queue;
+    std::string name;
+    int index;
     unsigned long long triggers = 0ULL;
     unsigned long long next_trigger = 0ULL;
 
@@ -23,7 +25,7 @@ public:
     int x = 0;
     int y = 0;
     std::string debug;
-    room();
+    room(const int _index);
     ~room();
     
     void set_base_dat_str(pixelstr &bdat);
@@ -54,6 +56,10 @@ public:
     }
 
     inline v2 getsize() {return size;}
+    inline void setname(const std::string _name) {this->name = _name;}
+    inline std::string getname() const {return this->name;}
+    inline void setindex(const int _index) {this->index = _index;}
+    inline int getindex() const {return this->index;}
 
     static v2 get_pixelstr_dim(const pixelstr &bdat);
 };

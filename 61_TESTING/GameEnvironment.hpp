@@ -1,8 +1,7 @@
 #pragma once
 
 #include <DUNE/DControlManager.hpp>
-#include "objects/Room.hpp"
-#include "objects/RObj.hpp"
+#include "objects/Level.hpp"
 #include "GameManagers.hpp"
 
 /** MACRO TOOLS **/
@@ -32,8 +31,8 @@ private:
     physicsmgr m_physicsmgr;
     
     /** ROOM OBJECT STORAGE **/
-    std::vector<room*> m_room_storage;
-    room *m_active_room = nullptr;
+    std::vector<level*> m_level_storage;
+    level *m_active_level = nullptr;
 
     /** MISCELLANEOUS **/
     std::thread m_controls_thread;
@@ -52,14 +51,15 @@ public:
     _keypress_fcts_make(right, KEY_RIGHT_BIT);
 
     /** PRE GAME **/
-    inline void subscribe_new_room(room *&&_room) {this->m_room_storage.push_back(_room);}
-    inline room *get_active_room() {return this->m_active_room;}
-    inline void set_active_room(const std::size_t index) {this->m_active_room = m_room_storage[index];}
+    inline void subscribe_new_level(level *&&_level) {this->m_level_storage.push_back(_level);}
+    inline level *get_active_level() {return this->m_active_level;}
+    inline void set_active_level(const std::size_t index) {this->m_active_level = m_level_storage[index];}
     inline unsigned long long get_tick() {return this->m_tick;}
     inline unsigned long long iterate_tick() {return this->m_tick++;}
     void stop();
     void register_event_current(const unsigned long long delay, const std::function<void()> fct);
     void launch();
     void debug_join() {this->m_controls_thread.join();}
+    inline int size() {return this->m_level_storage.size();}
 
 };

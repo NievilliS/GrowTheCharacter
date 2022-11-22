@@ -1,10 +1,11 @@
 #include "Room.hpp"
 #include "../ColorExtensions.hpp"
 
-room::room():
+room::room(const int _index):
     background_color(Pixel::DEFAULT),
     foreground_color(Pixel::DEFAULT),
-    size{1,1}
+    size{1,1},
+    index(_index)
 {
 }
 

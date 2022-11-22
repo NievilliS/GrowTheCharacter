@@ -59,6 +59,7 @@ class room
         unsigned int height;
     
     public:
+        room();
         ~room();
         room(const unsigned int, const unsigned int);
 
