@@ -13,7 +13,7 @@ protected:
 
     const std::regex room_rx{"^room(.): *"};
     const std::regex level_rx{"^level(.): *"};
-    const std::regex comment_rx{"^#.+"};
+    const std::regex comment_rx{"^//.+"};
     const std::regex line_rx{"[^\n]+"};
     const std::regex index_rx{"^index: *"};
     const std::regex end_rx{"^end *"};
@@ -92,7 +92,7 @@ public:
                 {
                     level *lv = genv->get_active_level();
                     roommaker rm(roombuff);
-                    lv->subscribe_new_room(rm.createroom());
+                    lv->subscribe_new_room(rm.createroom(this->genv));
                     lv->set_active_room(lv->size()-1);
                     status = 2;
                     continue;

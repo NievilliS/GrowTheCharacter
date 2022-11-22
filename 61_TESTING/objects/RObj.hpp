@@ -28,5 +28,5 @@ public:
 
     inline virtual v2 &coords() {return cr;}
     inline v2 &size() {return wh;}
-    inline LAYER &layer() {return lay;}
+    inline LAYER layer() {return lay;}
 };

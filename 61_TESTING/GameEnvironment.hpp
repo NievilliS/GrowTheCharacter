@@ -60,6 +60,8 @@ public:
     void register_event_current(const unsigned long long delay, const std::function<void()> fct);
     void launch();
     void debug_join() {this->m_controls_thread.join();}
+    void debug_notify() {this->m_graphicsmgr.notify(); this->m_physicsmgr.notify();}
+    void debug_terminate() {m_dcm.call_termination();}
     inline int size() {return this->m_level_storage.size();}
 
 };

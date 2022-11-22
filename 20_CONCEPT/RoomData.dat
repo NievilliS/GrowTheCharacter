@@ -1,4 +1,4 @@
-# Room concept and data
+// Room concept and data
 
 index:
 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~'{[]}@€\^°
@@ -7,24 +7,40 @@ end
 level0:
 room0:
 name: Test
+bgrcol: BLACK
+txtcol: BLUE % GREEN
 tiles:
-                  
- ################ 
- #        #     # 
- #      # # ### # 
- #      #   # # # 
- ############## # 
- #    <<<<<<<   # 
- # · ########   # 
- #   #<<<<<<<   # 
- ################ 
- #    +    +     2
- # .  +    +  xX# 
- #    #////+    # 
- #    #    + 111# 
- #  _ #\\\\# 1  # 
- ######    ###  # 
-       1111   33  
+##################
+##################
+##        #     ##
+##      # # ### ##
+##      #   # # ##
+############### ##
+##    <<<<<<<   ##
+## . ########   ##
+##   #<<<<<<<   ##
+### #############2
+##    +    +     2
+## .  +    +  xX#2
+##    #////+    ##
+##    #    + 111##
+##  _ #\\\\# 1  ##
+#######    ###  ##
+######111111#3333#
 end
+
+# Replacements
+gsub:
+. < + / \ x X _ 
+end
+
+class:
+start 1 1 0
+area 4 5 11 5 lspeed x y
+area 6 7 11 7 lspeed x y
+button 3 13 60 l0 l1
+area 5 9 5 10 toggwall x y l0 l1
+end
+
 endroom
 endlevel

@@ -52,7 +52,7 @@ void rplayerobj::physics(unsigned long long tick)
     // On collision eat inputs
     env_room->for_each<rspeedbump>([&](rspeedbump &t){
         static __UINT8_TYPE__ offset = 0u;
-        if(cr == t.coords())
+        if(bp == t.coords())
         {
             this->cr = bp;
             offset++;

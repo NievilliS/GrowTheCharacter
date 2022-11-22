@@ -62,4 +62,5 @@ public:
     inline int getindex() const {return this->index;}
 
     static v2 get_pixelstr_dim(const pixelstr &bdat);
+    inline pixelstr get_base_dat_str() const {return this->base_dat;}
 };

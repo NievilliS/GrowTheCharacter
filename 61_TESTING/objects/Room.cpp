@@ -36,7 +36,7 @@ void room::add_obj(robj *obj)
 
 void room::draw(unsigned long long tick)
 {
-    debug = COLORT_BLACK "Draw last took: " + std::to_string(x) + "\nPhys last took: " + std::to_string(y);
+    debug = COLORT_CYAN "Draw last took: " + std::to_string(x) + "\nPhys last took: " + std::to_string(y);
 
     ConsoleEngine_context << ConsoleEngine::CLEAR <<
         this->background_color.get_bcontrols() << "";
@@ -52,19 +52,26 @@ void room::draw(unsigned long long tick)
             {
                 case robj::B2:
                     str_B2 += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
                 case robj::B1:
                     str_B1 += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
                 case robj::F1:
                     str_F1 += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
                 case robj::F2:
                     str_F2 += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
                 case robj::F3:
                     str_F3 += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
                 case robj::F4:
                     str_F4 += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
                 case robj::D:
                 default:
                     str_D += (*i)->get_coord_str() + (*i)->draw(tick);
+                break;
             }
     }
 

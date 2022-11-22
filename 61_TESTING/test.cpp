@@ -12,7 +12,6 @@ int main(void)
     gamemaker maker(sb.str());
     gameenv *genv = maker.createenvironment();
 
-    genv->stop();
     genv->launch();
 
     return 0;
