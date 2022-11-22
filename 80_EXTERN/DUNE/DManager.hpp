@@ -87,20 +87,23 @@ public:
         const std::chrono::milliseconds delay_target_period;            //< 4: Target delay; it acts as an offset
         const bool log_ela;                                             //< 5: Call std::cout for every elapsed time per tick
         const std::string name;                                         //< 6: Name used in log calls.
-        const int *adress_millis;                                       //< 7: Address to store millis elapse into.
+        int *adress_millis;                                             //< 7: Address to store millis elapse into.
     };
 
 private:
     std::condition_variable cv;                             //< Used to pause thread
     std::mutex mutex;                                       //< Mutex is responsible for thread control
     std::thread thread;                                     //< Working thread
-    std::atomic<int> running;                               //< Atomic: If a tick is now running
-    std::atomic<int> terminated;                            //< Atomic: If the thread has been terminated
-    std::atomic<int> milli_last_ela;                        //< Atomic: How long the last tick has taken
-    std::atomic<int> canrun;                                //< Atomic: If initialization is done
-    const struct DManagerFlags flags;                       //< Control flags for manager
-    std::chrono::steady_clock::time_point schedule;         //< Next schedule to be executed at
 
+protected:
+    std::atomic<int> running = 0;                           //< Atomic: If a tick is now running
+    std::atomic<int> terminated = 0;                        //< Atomic: If the thread has been terminated
+    std::atomic<int> milli_last_ela = 0;                    //< Atomic: How long the last tick has taken
+    std::atomic<int> canrun = 0;                            //< Atomic: If initialization is done
+    std::chrono::steady_clock::time_point schedule;         //< Next schedule to be executed at
+    struct DManagerFlags flags;                             //< Control flags for manager
+
+private:
     /**
      * @fn bool DManager::DManager::wait_for()
      * @brief Wait for is called by DManager::run
@@ -162,6 +165,7 @@ public:
         if(this->terminated == 0)
         {
             this->terminated = 1;
+            this->cv.notify_one();
             this->cv.notify_one();
             this->thread.join();
             #ifdef DMANAGER_PRINT_DEBUG
@@ -264,6 +268,7 @@ public:
         if(this->terminated == 0)
         {
             this->terminated = 1;
+            this->cv.notify_one();
             this->cv.notify_one();
             this->thread.join();
             #ifdef DMANAGER_PRINT_DEBUG

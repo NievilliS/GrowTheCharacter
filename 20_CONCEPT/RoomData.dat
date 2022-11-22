@@ -1,50 +1,46 @@
-# Room concept and data
-
-list: auto
-end
+// Room concept and data
 
 index:
-0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~#'{[]}@€\^°
+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~'{[]}@€\^°
 end
 
 level0:
 room0:
-                  
- ################ 
- #        #     # 
- #      # # ### # 
- #      #   # # # 
- ############## # 
- #    <<<<<<<   # 
- # · ########   # 
- #   #<<<<<<<   # 
- ################ 
- #    +    +     2
- # .  +    +  xX# 
- #    #////+    # 
- #    #    + 111# 
- #  _ #\\\\# 1  # 
- ######    ###  # 
-       1111   33  
-gsub:
-< 
-. 
-+ 
-/ 
-\ 
-_ 
-x 
-X 
-#a
+name: Test
+bgrcol: BLACK
+txtcol: BLUE % GREEN
+tiles:
+##################
+##################
+##        #     ##
+##      # # ### ##
+##      #   # # ##
+############### ##
+##    <<<<<<<   ##
+## . ########   ##
+##   #<<<<<<<   ##
+### #############2
+##    +    +     2
+## .  +    +  xX#2
+##    #////+    ##
+##    #    + 111##
+##  _ #\\\\# 1  ##
+#######    ###  ##
+######111111#3333#
 end
+
+# Replacements
+gsub:
+. < + / \ x X _ 
+end
+
 class:
-start 2 2
-area 5 5 11 7 speedl x y
-jumpa 2 6 2 10
-jumpb 2 10
-tbtn 3 13 8 0 1
-area 5 9 5 10 drwall x y 0 1
-area 6 11 9 11 swall x y 2 2 0
-area 6 13 9 13 swall x y 2 2 2
-area 10 9 10 12 dwall x y 2
-area 
+start 1 1 0
+area 4 5 11 5 lspeed x y
+area 6 7 11 7 lspeed x y
+button 3 13 60 l0 l1
+area 5 9 5 10 toggwall x y l0 l1
+end
+
+endroom
+endlevel

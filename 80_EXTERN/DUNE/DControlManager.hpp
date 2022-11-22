@@ -82,13 +82,11 @@ public:
      */
     ~DControlManager()
     {
-        call_termination();
     }
 
     /**
      * @fn void DManager::DControlManager::call_termination()
      * @brief Invokes termination of all manager members
-     * @deprecated Not required as managers are automatically terminated and their threads freed upon destruction.
      */
     void call_termination()
     {
@@ -107,7 +105,7 @@ public:
      * @fn void DManager::DControlManager::launch()
      * @brief Loops and notifies managers according to their scedule, launch in Main thread!
      */
-    void launch(std::function<void()> macro)
+    void launch()
     {
         using namespace std::chrono;
 
@@ -124,7 +122,7 @@ public:
         }
     
         //!! Main loop
-        while(this->running) { macro(); for(auto i = managers.begin(); i != managers.end(); i++)
+        while(this->running) { for(auto i = managers.begin(); i != managers.end(); i++)
         {
             if((*i)->in_schedule())
                 (*i)->notify();
