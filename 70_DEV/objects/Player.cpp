@@ -7,7 +7,7 @@
 
 void rplayerobj::physics(unsigned long long tick)
 {
-    gameenv &env = *(gameenv*) this->env_ptr;
+    gameenv &env = *(gameenv*) this->m_env_ptr;
     level *env_level = env.get_active_level();
     room *env_room = env_level->get_active_room();
 
@@ -15,7 +15,7 @@ void rplayerobj::physics(unsigned long long tick)
     v2 bp = m_primary_coords;
     if(env.up_kbpressed() && this->m_primary_coords.vert > 0)
         m_primary_coords.vert--;
-    if(env.down_kbpressed() && this->m_primary_coords.vert + 1 < env_room->getsize().vert)
+    if(env.down_kbpressed() && this->m_primary_coords.vert + 1 < env_room->get_size().vert)
         m_primary_coords.vert++;
 
     // Disallow for clipping
@@ -33,7 +33,7 @@ void rplayerobj::physics(unsigned long long tick)
 
     if(env.left_kbpressed() && this->m_primary_coords.hori > 0)
         m_primary_coords.hori--;
-    if(env.right_kbpressed() && this->m_primary_coords.hori + 1 < env_room->getsize().hori)
+    if(env.right_kbpressed() && this->m_primary_coords.hori + 1 < env_room->get_size().hori)
         m_primary_coords.hori++;
 
     // Enable better controls by resetting individually
