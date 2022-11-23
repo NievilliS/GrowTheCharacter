@@ -22,21 +22,21 @@ public:
         switch(now)
         {
             case 0:
-                xy = cr + v2{0,1};
+                xy = m_primary_coords + v2{0,1};
             break; case 1:
-                xy = cr + v2{1,1};
+                xy = m_primary_coords + v2{1,1};
             break; case 2:
-                xy = cr + v2{1,0};
+                xy = m_primary_coords + v2{1,0};
             break; case 3:
-                xy = cr + v2{1,-1};
+                xy = m_primary_coords + v2{1,-1};
             break; case 4:
-                xy = cr + v2{0,-1};
+                xy = m_primary_coords + v2{0,-1};
             break; case 5:
-                xy = cr + v2{-1,-1};
+                xy = m_primary_coords + v2{-1,-1};
             break; case 6:
-                xy = cr + v2{-1,0};
+                xy = m_primary_coords + v2{-1,0};
             break; case 7:
-                xy = cr + v2{-1,1};
+                xy = m_primary_coords + v2{-1,1};
         }
     }
 
