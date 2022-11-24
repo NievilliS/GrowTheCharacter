@@ -1,6 +1,24 @@
 #pragma once
 
 #include "CharObj.hpp"
+#include <cmath>
+
+#define sign(a) ((a) < 0 ? -1.0 : 1.0)
+#define abs(a) ((a) < 0 ? -(a) : (a))
+inline double aprx_sin16(double in)
+{
+    const static double _A = -1.0/9216.0;
+    const static double _B = -5.0/384.0;
+    const static double _C = 17.0/72.0;
+
+    double _abs = fmod(abs(in), 16.0);
+    return sign(in) * ((_A * _abs * _abs * _abs) + (_B * _abs * _abs) + (_C * _abs));
+}
+
+inline double aprx_cos16(double in)
+{
+    return aprx_sin16(in + 8.0);
+}
 
 class rspinnyobj : public rcharobj
 {
@@ -20,7 +38,7 @@ public:
     {
         auto now = (m_offset + (tick / m_period));
 
-        m_secondary_coords = w
+        m_secondary_coords = m_primary_coords + v2{aprx_sin16(now), aprx_cos16(now)} * m_radius;
     }
 
     inline virtual v2 &coords() {return m_secondary_coords;}
