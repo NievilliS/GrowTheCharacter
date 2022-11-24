@@ -63,5 +63,6 @@ public:
     void debug_notify() {this->m_graphicsmgr.notify(); this->m_physicsmgr.notify();}
     void debug_terminate() {m_dcm.call_termination();}
     inline int size() {return this->m_level_storage.size();}
+    bool set_active_index_level(const int index);
 
 };

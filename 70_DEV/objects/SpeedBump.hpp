@@ -5,11 +5,6 @@
 class rspeedbump : public rcharobj
 {
 public:
-    enum direction_e : __UINT8_TYPE__
-    {
-        UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3
-    };
-
     static const char dir_to_char(const direction_e &d)
     {
         switch(d)

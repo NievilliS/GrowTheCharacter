@@ -3,6 +3,7 @@
 #include <regex>
 #include "GameEnvironment.hpp"
 #include "RoomMaker.hpp"
+#include "objects/RoomTransition.hpp"
 
 class gamemaker
 {
@@ -10,6 +11,7 @@ protected:
     std::string m_raw_game_str;
     std::string m_index_buffer{};
     gameenv *m_genv = nullptr;
+    std::vector<roomtransition*> m_transitions;
 
     const std::regex c_room_rx{"^room(.): *"};
     const std::regex c_level_rx{"^level(.): *"};
@@ -57,8 +59,11 @@ public:
                 else if(std::regex_search(str_line, smat, c_level_rx))
                 {
                     index_level = (int) smat[1].str()[0];
-                    this->m_genv->subscribe_new_level(new level(index_level));
-                    this->m_genv->set_active_level(this->m_genv->size()-1);
+                    if(!this->m_genv->set_active_index_level(index_level))
+                    {
+                        this->m_genv->subscribe_new_level(new level(index_level));
+                        this->m_genv->set_active_level(this->m_genv->size()-1);
+                    }
                     status = 2;
                     continue;
                 }
@@ -83,6 +88,7 @@ public:
                 }
                 else if(std::regex_match(str_line, c_endlevel_rx))
                 {
+                    this->m_genv->get_active_level()->set_active_room(0);
                     status = 0;
                 }
             }
@@ -91,7 +97,7 @@ public:
                 if(std::regex_match(str_line, c_endroom_rx))
                 {
                     level *lv = this->m_genv->get_active_level();
-                    roommaker rm(roombuff);
+                    roommaker rm(index_level, &m_transitions, roombuff);
                     lv->subscribe_new_room(rm.createroom(this->m_genv));
                     lv->set_active_room(lv->size()-1);
                     status = 2;
@@ -100,6 +106,43 @@ public:
                 roombuff += str_line + '\n';
             }
         }
+
+        //! Linking step
+        for(auto i = m_transitions.begin(); i != m_transitions.end(); i++)
+        {
+            roomtransition *&active = *i;
+            if(active->is_linked()) continue;
+
+            for(auto j = m_transitions.begin(); j != m_transitions.end(); j++)
+            {
+                roomtransition *&cmp = *j;
+                if(active == cmp) continue;
+                if(cmp->is_linked()) continue;
+
+                if(active->do_next_level() && cmp->do_prev_level())
+                {
+                    if(active->get_level_index() + 1 == cmp->get_level_index())
+                    {
+                        active->set_link(cmp);
+                        cmp->set_link(active);
+                        break;
+                    }
+                }
+
+                else if(active->get_level_index() == cmp->get_level_index())
+                {
+                    if(active->get_meta_index() == cmp->get_meta_index() && !active->do_next_level() && !active->do_prev_level() && !cmp->do_next_level() && !cmp->do_prev_level())
+                    {
+                        active->set_link(cmp);
+                        cmp->set_link(active);
+                        break;
+                    }
+                }
+            }
+        }
+
+        this->m_transitions.clear();
+        this->m_genv->set_active_level(0);
 
         return this->m_genv;
     }

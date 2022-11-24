@@ -6,6 +6,10 @@
 class robj
 {
 public:
+    enum direction_e : __UINT8_TYPE__
+    {
+        UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3
+    };
     enum layer_e
     {
         B2, B1, D, F1, F2, F3, F4

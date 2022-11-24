@@ -52,4 +52,16 @@ public:
         __UINT8_TYPE__ ID = _ID - 65;
         return (ltriggers & (1 << ID)) > 0;
     }
+
+    inline void set_active_index_room(const int index)
+    {
+        for(auto i = this->m_room_storage.begin(); i != this->m_room_storage.end(); i++)
+        {
+            if((*i)->get_index() == index)
+            {
+                this->m_active_room = *i;
+                return;
+            }            
+        }
+    }
 };

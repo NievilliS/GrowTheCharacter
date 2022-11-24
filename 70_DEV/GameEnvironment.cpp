@@ -123,3 +123,17 @@ void gameenv::stop()
     this->m_running = false;
     this->m_dcm.stop();
 }
+
+bool gameenv::set_active_index_level(const int index)
+{
+    for(auto i = this->m_level_storage.begin(); i != this->m_level_storage.end(); i++)
+    {
+        if((*i)->get_index() == index)
+        {
+            this->m_active_level = *i;
+            return true;
+        }            
+    }
+    return false;
+}
+

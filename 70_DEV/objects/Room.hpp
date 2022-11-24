@@ -4,6 +4,7 @@
 #include "RObj.hpp"
 #include "Player.hpp"
 #include "EventQueue.hpp"
+#include "RoomTransition.hpp"
 #include <atomic>
 #include <memory>
 
@@ -16,10 +17,12 @@ private:
     v2 m_size;
     std::vector<robj*> m_object_storage;
     std::vector<reventqueue*> m_event_queue;
+    std::vector<roomtransition*> m_transition_storage;
     std::string m_room_name;
     int m_index;
     unsigned long long m_trigger_map = 0ULL;
     unsigned long long m_next_trigger_map = 0ULL;
+    bool m_cancel_phys = false;
 
 public:
     room(const int _index);
@@ -60,4 +63,8 @@ public:
 
     static v2 get_pixelstr_dim(const pixelstr &bdat);
     inline pixelstr get_base_dat_str() const {return this->m_base_dat;}
+    roomtransition *get_if_collide(const v2 &v);
+    void remove_obj(const robj *obj);
+    inline void add_transition(roomtransition *rt) {this->m_transition_storage.push_back(rt);}
+    inline void cancel_phys() {this->m_cancel_phys = true;}
 };

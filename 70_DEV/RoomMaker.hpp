@@ -47,6 +47,8 @@ const Pixel::Color &get_color(std::string st)
 class roommaker
 {
 protected:
+    const int m_level_index;
+    std::vector<roomtransition*> *m_transitions;
     std::string m_raw_room_str;
 
     const std::regex
@@ -70,7 +72,7 @@ protected:
         c_cl_toggwall_rx{"toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"};
 
 public:
-    roommaker(const std::string _raw_room_string): m_raw_room_str(_raw_room_string) {}
+    roommaker(const int _level_index, std::vector<roomtransition*> *_transitions, const std::string _raw_room_string): m_raw_room_str(_raw_room_string), m_transitions(_transitions), m_level_index(_level_index) {}
 
     room *createroom(void *env_ptr)
     {
@@ -155,6 +157,169 @@ public:
                         if(y < wh.vert - 3) rt += '\n';
                     }
 
+                    //Upper transition
+                    int _in_active = -3;
+                    int _len = 0;
+
+                    for(int x = 1; x < wh.hori - 1; x++)
+                    {
+                        if(tile_str[x] != '#' && _len <= 0)
+                        {
+                            _in_active = (int)tile_str[x];
+                            _len++;
+                        }
+                        else if(tile_str[x] == _in_active)
+                        {
+                            _len++;
+                        }
+                        else
+                        {
+                            if(_len > 0)
+                            {
+                                roomtransition *rt = new roomtransition(x - _len - 1, -1, _len, 1, ret->get_index(), m_level_index, 1, _in_active);
+                                ret->add_transition(rt);
+                                m_transitions->push_back(rt);
+                                _len = 0;
+                                _in_active = -3;
+                            }
+
+                            if(tile_str[x] != '#')
+                            {
+                                _in_active = tile_str[x];
+                                _len++;
+                            }
+                        }
+                    }
+
+                    if(_len > 0)
+                    {
+                        roomtransition *rt = new roomtransition(wh.hori - _len - 3, -1, _len, 1, ret->get_index(), m_level_index, 1, _in_active);
+                        ret->add_transition(rt);
+                        m_transitions->push_back(rt);
+                        _len = 0;
+                        _in_active = -3;
+                    }
+
+                    //Lower Transition
+                    for(int x = 1; x < wh.hori - 1; x++)
+                    {
+                        if(tile_str[x] != '#' && _len <= 0)
+                        {
+                            _in_active = (int)tile_str[x + (wh.vert - 2) * (wh.hori+1)];
+                            _len++;
+                        }
+                        else if(tile_str[x + (wh.vert - 2) * (wh.hori+1)] == _in_active)
+                        {
+                            _len++;
+                        }
+                        else
+                        {
+                            if(_len > 0)
+                            {
+                                roomtransition *rt = new roomtransition(x - _len - 1, (wh.vert - 3), _len, 1, ret->get_index(), m_level_index, 0, _in_active);
+                                ret->add_transition(rt);
+                                m_transitions->push_back(rt);
+                                _len = 0;
+                                _in_active = -3;
+                            }
+
+                            if(tile_str[x + (wh.vert - 2) * (wh.hori+1)] != '#')
+                            {
+                                _in_active = tile_str[x + (wh.vert - 2) * (wh.hori+1)];
+                                _len++;
+                            }
+                        }
+                    }
+
+                    if(_len > 0)
+                    {
+                        roomtransition *rt = new roomtransition(wh.hori - _len - 3, (wh.vert - 3), _len, 1, ret->get_index(), m_level_index, 0, _in_active);
+                        ret->add_transition(rt);
+                        m_transitions->push_back(rt);
+                        _len = 0;
+                        _in_active = -3;
+                    }
+
+                    //Left transitions
+                    for(int y = 1; y < wh.vert - 2; y++)
+                    {
+                        if(tile_str[y * (wh.hori+1)] != '#' && _len <= 0)
+                        {
+                            _in_active = (int)tile_str[y * (wh.hori+1)];
+                            _len++;
+                        }
+                        else if(tile_str[y * (wh.hori+1)] == _in_active)
+                        {
+                            _len++;
+                        }
+                        else
+                        {
+                            if(_len > 0)
+                            {
+                                roomtransition *rt = new roomtransition(-1, y - _len - 1, 1, _len, ret->get_index(), m_level_index, 3, _in_active);
+                                ret->add_transition(rt);
+                                m_transitions->push_back(rt);
+                                _len = 0;
+                                _in_active = -3;
+                            }
+
+                            if(tile_str[y * (wh.hori+1)] != '#')
+                            {
+                                _in_active = tile_str[y * (wh.hori+1)];
+                                _len++;
+                            }
+                        }
+                    }
+
+                    if(_len > 0)
+                    {
+                        roomtransition *rt = new roomtransition(-1, wh.vert - _len - 3, 1, _len, ret->get_index(), m_level_index, 3, _in_active);
+                        ret->add_transition(rt);
+                        m_transitions->push_back(rt);
+                        _len = 0;
+                        _in_active = -3;
+                    }
+
+                    // Right stuff
+                    for(int y = 1; y < wh.vert - 2; y++)
+                    {
+                        if(tile_str[y * (wh.hori+1) + wh.hori - 1] != '#' && _len <= 0)
+                        {
+                            _in_active = (int)tile_str[y * (wh.hori+1) + wh.hori - 1] ;
+                            _len++;
+                        }
+                        else if(tile_str[y * (wh.hori+1) + wh.hori - 1] == _in_active)
+                        {
+                            _len++;
+                        }
+                        else
+                        {
+                            if(_len > 0)
+                            {
+                                roomtransition *rt = new roomtransition(wh.hori - 2, y - _len - 1, 1, _len, ret->get_index(), m_level_index, 2, _in_active);
+                                ret->add_transition(rt);
+                                m_transitions->push_back(rt);
+                                _len = 0;
+                                _in_active = -3;
+                            }
+
+                            if(tile_str[y * (wh.hori+1) + wh.hori - 1] != '#')
+                            {
+                                _in_active = tile_str[y * (wh.hori+1) + wh.hori - 1];
+                                _len++;
+                            }
+                        }
+                    }
+
+                    if(_len > 0)
+                    {
+                        roomtransition *rt = new roomtransition(wh.hori, wh.vert - _len - 3, 1, _len, ret->get_index(), m_level_index, 2, _in_active);
+                        ret->add_transition(rt);
+                        m_transitions->push_back(rt);
+                        _len = 0;
+                        _in_active = -3;
+                    }
+
                     pixelstr ps{};
                     Pixel::copy_string_to_pixel_string(ps, rt, [&](const size_t i, char &c, Pixel::ColorType &t, Pixel::Color &col, Pixel::Font &f)
                     {
@@ -183,7 +348,6 @@ public:
                         }
                     });
                     ret->set_base_dat_str(ps);
-                    ret->draw(0);
                 }
                 tile_str += str_line;
             }

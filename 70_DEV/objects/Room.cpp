@@ -105,6 +105,12 @@ void room::physics(unsigned long long tick)
 
     for(auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
     {
+        if(m_cancel_phys)
+        {
+            m_cancel_phys = false;
+            return;
+        }
+
         (*i)->physics(tick);
     }
     this->m_trigger_map = this->m_next_trigger_map;
@@ -145,6 +151,8 @@ void room::set_foreground_color(const Pixel::Color &bgr)
 
 int room::collision_with_base(rplayerobj *rpo)
 {
+    if(rpo->coords().hori < 0 || rpo->coords().hori >= this->m_size.hori || rpo->coords().vert < 0 || rpo->coords().vert >= this->m_size.vert)
+        return 3;
     switch(Pixel::get_pixel_char(this->m_base_dat[rpo->coords().hori + rpo->coords().vert * (this->m_size.hori + 1)]))
     {
         case '#':
@@ -183,4 +191,32 @@ room::~room()
         delete *i;
     }
     this->m_event_queue.clear();
+
+    for(std::vector<roomtransition*>::iterator i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
+    {
+        delete *i;
+    }
+    this->m_transition_storage.clear();
+}
+
+roomtransition *room::get_if_collide(const v2 &v)
+{
+    for(auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
+    {
+        if((*i)->collides(v))
+            return (*i);
+    }
+    return nullptr;
+}
+
+void room::remove_obj(const robj *obj)
+{
+    for(auto i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
+    {
+        if(*i == obj)
+        { 
+            this->m_object_storage.erase(i);
+            return;
+        }
+    }
 }

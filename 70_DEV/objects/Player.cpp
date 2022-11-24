@@ -13,9 +13,9 @@ void rplayerobj::physics(unsigned long long tick)
 
     // Controls
     v2 bp = m_primary_coords;
-    if(env.up_kbpressed() && this->m_primary_coords.vert > 0)
+    if(env.up_kbpressed())
         m_primary_coords.vert--;
-    if(env.down_kbpressed() && this->m_primary_coords.vert + 1 < env_room->get_size().vert)
+    if(env.down_kbpressed())
         m_primary_coords.vert++;
 
     // Disallow for clipping
@@ -23,6 +23,43 @@ void rplayerobj::physics(unsigned long long tick)
     {
         m_primary_coords = bp;
     }
+    // Room transition
+    else if(env_room->collision_with_base(this) == 3)
+    {
+        roomtransition *rt = env_room->get_if_collide(m_primary_coords);
+        if(rt != nullptr)
+        {
+            roomtransition *nx = rt->get_link();
+
+            if(rt->do_next_level() || rt->do_prev_level())
+            {
+                int nrx = nx->get_room_index();
+                int nlx = nx->get_level_index();
+
+                env_room->cancel_phys();
+                env_room->remove_obj(this);
+                this->m_primary_coords = nx->get_coord_of_player();
+                env.set_active_index_level(nlx);
+                env.get_active_level()->set_active_index_room(nrx);
+                env.get_active_level()->get_active_room()->add_obj(this);
+            }
+            else
+            {
+                int nrx = nx->get_room_index();
+                env_room->cancel_phys();
+                env_room->remove_obj(this);
+                this->m_primary_coords = nx->get_coord_of_player();
+                env_level->set_active_index_room(nrx);
+                env_level->get_active_room()->add_obj(this);
+            }
+            return;
+        }
+        else
+        {
+           m_primary_coords = bp; 
+        }
+    }
+
     // On collision check and reset
     env_room->for_each<rsolidobj>([&](rsolidobj &t){
         if(m_primary_coords == t.coords() && t.is_solid())
@@ -31,9 +68,9 @@ void rplayerobj::physics(unsigned long long tick)
         }
     });
 
-    if(env.left_kbpressed() && this->m_primary_coords.hori > 0)
+    if(env.left_kbpressed())
         m_primary_coords.hori--;
-    if(env.right_kbpressed() && this->m_primary_coords.hori + 1 < env_room->get_size().hori)
+    if(env.right_kbpressed())
         m_primary_coords.hori++;
 
     // Enable better controls by resetting individually
@@ -41,6 +78,44 @@ void rplayerobj::physics(unsigned long long tick)
     {
         m_primary_coords.hori = bp.hori;
     }
+
+    // Room transition
+    else if(env_room->collision_with_base(this) == 3)
+    {
+        roomtransition *rt = env_room->get_if_collide(m_primary_coords);
+        if(rt != nullptr)
+        {
+            roomtransition *nx = rt->get_link();
+
+            if(rt->do_next_level() || rt->do_prev_level())
+            {
+                int nrx = nx->get_room_index();
+                int nlx = nx->get_level_index();
+
+                env_room->cancel_phys();
+                env_room->remove_obj(this);
+                this->m_primary_coords = nx->get_coord_of_player();
+                env.set_active_index_level(nlx);
+                env.get_active_level()->set_active_index_room(nrx);
+                env.get_active_level()->get_active_room()->add_obj(this);
+            }
+            else
+            {
+                int nrx = nx->get_room_index();
+                env_room->cancel_phys();
+                env_room->remove_obj(this);
+                this->m_primary_coords = nx->get_coord_of_player();
+                env_level->set_active_index_room(nrx);
+                env_level->get_active_room()->add_obj(this);
+            }
+            return;
+        }
+        else
+        {
+           m_primary_coords = bp; 
+        }
+    }
+
     // On collision check and reset
     env_room->for_each<rsolidobj>([&](rsolidobj &t){
         if(m_primary_coords == t.coords() && t.is_solid())
