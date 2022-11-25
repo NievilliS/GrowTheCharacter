@@ -6,6 +6,7 @@
 #include "objects/SpeedBump.hpp"
 #include "objects/Button.hpp"
 #include "objects/DisappearingWall.hpp"
+#include "objects/Spinny.hpp"
 
 const Pixel::Color &get_color(std::string st)
 {
@@ -69,7 +70,8 @@ protected:
         c_cl_area_rx{"^area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) "},
         c_cl_speed_rx{"(.)speed ([0-9x]+) ([0-9y]+) *"},
         c_cl_button_rx{"button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
-        c_cl_toggwall_rx{"toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"};
+        c_cl_toggwall_rx{"toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
+        c_cl_spinner_rx{"spinner ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) ([0-9.]+) ([0-9]+) *"};
 
 public:
     roommaker(const int _level_index, std::vector<roomtransition*> *_transitions, const std::string _raw_room_string): m_raw_room_str(_raw_room_string), m_transitions(_transitions), m_level_index(_level_index) {}
@@ -461,6 +463,24 @@ public:
                     }
                     else
                         ret->add_obj(new rdisappearingwall(std::atoi(smat[1].str().c_str()), std::atoi(smat[2].str().c_str()), robj::F2, prID, reID));
+                }
+
+                else if(std::regex_search(str_line, smat, c_cl_spinner_rx))
+                {
+                    double period = std::atof(smat[4].str().c_str());
+                    double offset = std::atof(smat[5].str().c_str());
+                    int radius = std::atoi(smat[6].str().c_str());
+                    char ch = smat[3].str()[0];
+
+                    if(area_flag)
+                    {
+                        for(int x = a; x <= c; x++) for(int y = b; y <= d; y++)
+                        {
+                            ret->add_obj(new rspinnyobj(x, y, ch, period, offset, radius));
+                        }
+                    }
+                    else
+                        ret->add_obj(new rspinnyobj(std::atoi(smat[1].str().c_str()), std::atoi(smat[2].str().c_str()), ch, period, offset, radius));
                 }
 
 

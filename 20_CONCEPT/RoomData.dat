@@ -52,6 +52,7 @@ end
 
 class:
 button 3 2 -1 l0 64
+spinner 3 2 X 0.5 0 1
 end
 endroom
 endlevel
