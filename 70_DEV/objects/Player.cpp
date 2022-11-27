@@ -147,3 +147,13 @@ void rplayerobj::physics(unsigned long long tick)
         }
     });
 }
+
+bool rplayerobj::can_move() const
+{
+    return this->m_can_move;
+}
+
+void rplayerobj::set_can_move(const bool b)
+{
+    
+}
