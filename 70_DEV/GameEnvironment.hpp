@@ -39,6 +39,8 @@ private:
     std::atomic<int> m_keymap = 0;
     unsigned long long m_tick = 0ULL;
     bool m_running = true;
+    v2 *pcoord;
+    bool m_debug_information = false;
 
 public:
     gameenv();
@@ -64,5 +66,8 @@ public:
     void debug_terminate() {m_dcm.call_termination();}
     inline int size() {return this->m_level_storage.size();}
     bool set_active_index_level(const int index);
+    void set_pcoord(v2 *pcoord);
+    v2 *get_pcoord() const;
+    void __debug_set_flag();
 
 };

@@ -22,7 +22,7 @@ void graphicsmgr::init_user()
 
 void graphicsmgr::run_user()
 {
-    gameenv &ge = *(gameenv*) m_env_ptr;
+    static gameenv &ge = *(gameenv*) m_env_ptr;
     level *lv = ge.get_active_level();
     room *rm = lv->get_active_room();
     if(rm != nullptr)
@@ -53,7 +53,7 @@ void physicsmgr::init_user()
 
 void physicsmgr::run_user()
 {
-    gameenv &ge = *(gameenv*) m_env_ptr;
+    static gameenv &ge = *(gameenv*) m_env_ptr;
     level *lv = ge.get_active_level();
     room *rm = lv->get_active_room();
     if(rm != nullptr)

@@ -85,4 +85,9 @@ public:
     {
         return m_link;
     }
+
+    inline void set_meta_index(int _id)
+    {
+        this->m_meta_index = _id;
+    }
 };

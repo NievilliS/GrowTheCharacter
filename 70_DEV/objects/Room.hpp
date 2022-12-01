@@ -23,6 +23,7 @@ private:
     unsigned long long m_trigger_map = 0ULL;
     unsigned long long m_next_trigger_map = 0ULL;
     bool m_cancel_phys = false;
+    bool m_debug_information = false;
 
 public:
     room(const int _index);
@@ -54,6 +55,22 @@ public:
             fct(**i);
         }
     }
+    
+    void for_each_transition(std::function<void(roomtransition &)> fct)
+    {
+        std::vector<roomtransition*> vct;
+        for(auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
+        {
+            roomtransition* pt = dynamic_cast<roomtransition*>(*i);
+            if(pt != nullptr)
+                vct.push_back(pt);
+        }
+
+        for(auto i = vct.begin(); i != vct.end(); i++)
+        {
+            fct(**i);
+        }
+    }
 
     inline v2 get_size() {return m_size;}
     inline void set_name(const std::string _name) {this->m_room_name = _name;}
@@ -67,4 +84,5 @@ public:
     void remove_obj(const robj *obj);
     inline void add_transition(roomtransition *rt) {this->m_transition_storage.push_back(rt);}
     inline void cancel_phys() {this->m_cancel_phys = true;}
+    inline void __debug_set_flag() {this->m_debug_information = true;}
 };

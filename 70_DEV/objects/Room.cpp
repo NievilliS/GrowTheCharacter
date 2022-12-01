@@ -1,5 +1,6 @@
 #include "Room.hpp"
 #include "../ColorExtensions.hpp"
+#include "Utils.hpp"
 
 room::room(const int _index):
     m_background_color(Pixel::DEFAULT),
@@ -39,6 +40,32 @@ void room::draw(unsigned long long tick)
     ConsoleEngine_context << ConsoleEngine::CLEAR <<
         this->m_background_color.get_bcontrols() << "" <<
         this->m_base_dat;
+    
+    //DEBUB:
+    if(m_debug_information)
+    {
+        static v2 *ABC = Utils::get_env_pcoord();
+        ConsoleEngine_context << "\n\nP-coords: x" << ABC->hori << "y" << ABC->vert;
+        ConsoleEngine_context << "\nR-trig: ";
+
+        pixelstr rtrig, ltrig;
+
+        for(int i = 0; i < 64; i++)
+        {
+            rtrig += Pixel::create_pixel('0' + (i % 10), Pixel::BACKGROUND,
+                Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL
+            );
+        }
+        ConsoleEngine_context << rtrig << "\nL-trig: ";
+
+        for(int i = 65; i < 129; i++)
+        {
+            ltrig += Pixel::create_pixel('0' + ((i - 5) % 10), Pixel::BACKGROUND,
+                Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL
+            );
+        }
+        ConsoleEngine_context << ltrig;
+    }
 
     pixelstr str_B2, str_B1, str_D, str_F1, str_F2, str_F3, str_F4;
 

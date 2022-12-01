@@ -7,6 +7,7 @@
 #include "objects/Button.hpp"
 #include "objects/DisappearingWall.hpp"
 #include "objects/Spinny.hpp"
+#include "objects/TeleportObj.hpp"
 
 const Pixel::Color &get_color(std::string st)
 {
@@ -53,25 +54,28 @@ protected:
     std::string m_raw_room_str;
 
     const std::regex
-        c_check_rx{"^room.: *"},
-        c_index_rx{"^room(.): *"},
+        c_check_rx{"^ *room.: *"},
+        c_index_rx{"^ *room(.): *"},
         c_line_rx{"[^\n]+"},
-        c_tiles_rx{"^tiles: *"},
-        c_name_rx{"^name: ?([^ ]+) *"},
-        c_comment_rx{"^//.*"},
-        c_end_rx{"^end *"},
-        c_bcol_rx{"^bgrcol: ?([^ ]+) *"},
-        c_tcol_rx{"^txtcol: ?([^ ]+) *"},
-        c_tcol2_rx{"^txtcol: ?([^ ]+) ?% ?([^ ]+) *"},
-        c_gsub_rx{"^gsub: *"},
-        c_class_rx{"^class: *"},
+        c_tiles_rx{"^ *tiles: *"},
+        c_name_rx{"^ *name: ?([^ ]+) *"},
+        c_comment_rx{"^ *//.*"},
+        c_end_rx{"^ *end *"},
+        c_bcol_rx{"^ *bgrcol: ?([^ ]+) *"},
+        c_tcol_rx{"^ *txtcol: ?([^ ]+) *"},
+        c_tcol2_rx{"^ *txtcol: ?([^ ]+) ?% ?([^ ]+) *"},
+        c_gsub_rx{"^ *gsub: *"},
+        c_class_rx{"^ *class: *"},
+        c_transition_rx{"^ *transitions: *"},
+        c_transition_gsub_rx{"^ *(.)=([0-9]+) *"},
 
         c_cl_start_rx{"start ([0-9x]+) ([0-9y]+) (.) *"},
-        c_cl_area_rx{"^area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) "},
-        c_cl_speed_rx{"(.)speed ([0-9x]+) ([0-9y]+) *"},
+        c_cl_area_rx{"^ *area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) +.+"},
+        c_cl_speed_rx{" *(.)speed ([0-9x]+) ([0-9y]+) *"},
         c_cl_button_rx{"button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
         c_cl_toggwall_rx{"toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
-        c_cl_spinner_rx{"spinner ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) ([0-9.]+) ([0-9]+) *"};
+        c_cl_spinner_rx{"spinner ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) ([0-9.]+) ([0-9]+) *"},
+        c_cl_teleporter_rx{"^ *teleporter ([0-9]) ([0-9]) ([0-9]) ([0-9]) ([yn]) *"};
 
 public:
     roommaker(const int _level_index, std::vector<roomtransition*> *_transitions, const std::string _raw_room_string): m_raw_room_str(_raw_room_string), m_transitions(_transitions), m_level_index(_level_index) {}
@@ -137,6 +141,10 @@ public:
                 {
                     status = 3;
                 }
+                else if(std::regex_match(str_line, c_transition_rx))
+                {
+                    status = 4;
+                }
             }
             else if(status == 1)
             {
@@ -178,7 +186,7 @@ public:
                         {
                             if(_len > 0)
                             {
-                                roomtransition *rt = new roomtransition(x - _len - 1, -1, _len, 1, ret->get_index(), m_level_index, 1, _in_active);
+                                roomtransition *rt = new roomtransition(x - _len - 1, -1, _len, 1, ret->get_index(), m_level_index, 1, -_in_active);
                                 ret->add_transition(rt);
                                 m_transitions->push_back(rt);
                                 _len = 0;
@@ -187,7 +195,7 @@ public:
 
                             if(tile_str[x] != '#')
                             {
-                                _in_active = tile_str[x];
+                                _in_active = (int)tile_str[x];
                                 _len++;
                             }
                         }
@@ -195,7 +203,7 @@ public:
 
                     if(_len > 0)
                     {
-                        roomtransition *rt = new roomtransition(wh.hori - _len - 3, -1, _len, 1, ret->get_index(), m_level_index, 1, _in_active);
+                        roomtransition *rt = new roomtransition(wh.hori - _len - 3, -1, _len, 1, ret->get_index(), m_level_index, 1, -_in_active);
                         ret->add_transition(rt);
                         m_transitions->push_back(rt);
                         _len = 0;
@@ -218,7 +226,7 @@ public:
                         {
                             if(_len > 0)
                             {
-                                roomtransition *rt = new roomtransition(x - _len - 1, (wh.vert - 3), _len, 1, ret->get_index(), m_level_index, 0, _in_active);
+                                roomtransition *rt = new roomtransition(x - _len - 1, (wh.vert - 3), _len, 1, ret->get_index(), m_level_index, 0, -_in_active);
                                 ret->add_transition(rt);
                                 m_transitions->push_back(rt);
                                 _len = 0;
@@ -235,7 +243,7 @@ public:
 
                     if(_len > 0)
                     {
-                        roomtransition *rt = new roomtransition(wh.hori - _len - 3, (wh.vert - 3), _len, 1, ret->get_index(), m_level_index, 0, _in_active);
+                        roomtransition *rt = new roomtransition(wh.hori - _len - 3, (wh.vert - 3), _len, 1, ret->get_index(), m_level_index, 0, -_in_active);
                         ret->add_transition(rt);
                         m_transitions->push_back(rt);
                         _len = 0;
@@ -258,7 +266,7 @@ public:
                         {
                             if(_len > 0)
                             {
-                                roomtransition *rt = new roomtransition(-1, y - _len - 1, 1, _len, ret->get_index(), m_level_index, 3, _in_active);
+                                roomtransition *rt = new roomtransition(-1, y - _len - 1, 1, _len, ret->get_index(), m_level_index, 3, -_in_active);
                                 ret->add_transition(rt);
                                 m_transitions->push_back(rt);
                                 _len = 0;
@@ -275,7 +283,7 @@ public:
 
                     if(_len > 0)
                     {
-                        roomtransition *rt = new roomtransition(-1, wh.vert - _len - 3, 1, _len, ret->get_index(), m_level_index, 3, _in_active);
+                        roomtransition *rt = new roomtransition(-1, wh.vert - _len - 3, 1, _len, ret->get_index(), m_level_index, 3, -_in_active);
                         ret->add_transition(rt);
                         m_transitions->push_back(rt);
                         _len = 0;
@@ -298,7 +306,7 @@ public:
                         {
                             if(_len > 0)
                             {
-                                roomtransition *rt = new roomtransition(wh.hori - 2, y - _len - 1, 1, _len, ret->get_index(), m_level_index, 2, _in_active);
+                                roomtransition *rt = new roomtransition(wh.hori - 2, y - _len - 1, 1, _len, ret->get_index(), m_level_index, 2, -_in_active);
                                 ret->add_transition(rt);
                                 m_transitions->push_back(rt);
                                 _len = 0;
@@ -315,7 +323,7 @@ public:
 
                     if(_len > 0)
                     {
-                        roomtransition *rt = new roomtransition(wh.hori, wh.vert - _len - 3, 1, _len, ret->get_index(), m_level_index, 2, _in_active);
+                        roomtransition *rt = new roomtransition(wh.hori, wh.vert - _len - 3, 1, _len, ret->get_index(), m_level_index, 2, -_in_active);
                         ret->add_transition(rt);
                         m_transitions->push_back(rt);
                         _len = 0;
@@ -352,6 +360,23 @@ public:
                     ret->set_base_dat_str(ps);
                 }
                 tile_str += str_line;
+            }
+            else if(status == 4)
+            {
+                if(std::regex_match(str_line, c_end_rx))
+                {
+                    status = 0;
+                }
+                else if(std::regex_search(str_line, smat, c_transition_gsub_rx))
+                {
+                    int c = smat[1].str()[0];
+                    int r = std::atoi(smat[2].str().c_str());
+
+                    ret->for_each_transition([&c,&r](roomtransition &rt){
+                        if(rt.get_meta_index() == -c)
+                            rt.set_meta_index(r);
+                    });
+                }
             }
             else if(status == 3)
             {
@@ -483,6 +508,17 @@ public:
                         ret->add_obj(new rspinnyobj(std::atoi(smat[1].str().c_str()), std::atoi(smat[2].str().c_str()), ch, period, offset, radius));
                 }
 
+
+                else if(std::regex_search(str_line, smat, c_cl_teleporter_rx))
+                {
+                    int xs = std::atoi(smat[1].str().c_str());
+                    int ys = std::atoi(smat[2].str().c_str());
+                    int xd = std::atoi(smat[3].str().c_str());
+                    int yd = std::atoi(smat[4].str().c_str());
+                    int ow = smat[5].str()[0] == 'y' ? 1 : 0;
+
+                    ret->add_obj(new rteleportobj(xs, ys, xd, yd, ow));
+                }
 
             }
         }

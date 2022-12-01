@@ -4,6 +4,7 @@
 #include "SpeedBump.hpp"
 #include "Button.hpp"
 #include "SolidObj.hpp"
+#include "TeleportObj.hpp"
 
 void rplayerobj::physics(unsigned long long tick)
 {
@@ -13,9 +14,9 @@ void rplayerobj::physics(unsigned long long tick)
 
     // Controls
     v2 bp = m_primary_coords;
-    if(env.up_kbpressed())
+    if(env.up_kbpressed() && m_can_move)
         m_primary_coords.vert--;
-    if(env.down_kbpressed())
+    if(env.down_kbpressed() && m_can_move)
         m_primary_coords.vert++;
 
     // Disallow for clipping
@@ -30,6 +31,7 @@ void rplayerobj::physics(unsigned long long tick)
         if(rt != nullptr)
         {
             roomtransition *nx = rt->get_link();
+            if(nx == nullptr) { this->m_primary_coords = bp; return; }
 
             if(rt->do_next_level() || rt->do_prev_level())
             {
@@ -68,9 +70,9 @@ void rplayerobj::physics(unsigned long long tick)
         }
     });
 
-    if(env.left_kbpressed())
+    if(env.left_kbpressed() && m_can_move)
         m_primary_coords.hori--;
-    if(env.right_kbpressed())
+    if(env.right_kbpressed() && m_can_move)
         m_primary_coords.hori++;
 
     // Enable better controls by resetting individually
@@ -86,6 +88,7 @@ void rplayerobj::physics(unsigned long long tick)
         if(rt != nullptr)
         {
             roomtransition *nx = rt->get_link();
+            if(nx == nullptr)  { this->m_primary_coords.hori = bp.hori; return; }
 
             if(rt->do_next_level() || rt->do_prev_level())
             {
@@ -124,17 +127,30 @@ void rplayerobj::physics(unsigned long long tick)
         }
     });
 
-    // On collision eat inputs
+    // On collision eat inputs and reset moving ability + disable for buffering
     env_room->for_each<rspeedbump>([&](rspeedbump &t){
         static __UINT8_TYPE__ offset = 0u;
         if(bp == t.coords())
         {
+            this->set_can_move(false);
             this->m_primary_coords = bp;
             offset++;
             if(offset % 5 == 0)
             {
                 offset = 0;
                 t.push_v2(&this->m_primary_coords);
+                env.register_event_current(1, [this, env_room]{
+                    bool rt = false;
+                    env_room->for_each<rspeedbump>([this, &rt](rspeedbump &t){
+                        if(!rt && this->coords() == t.coords())
+                        {
+                            rt = true;
+                            return;
+                        }
+                    });
+                    if(!rt)
+                        this->set_can_move(true);
+                });
             }
         }
     });
@@ -146,6 +162,24 @@ void rplayerobj::physics(unsigned long long tick)
             t.press(tick);
         }
     });
+
+    // Teleporter
+    env_room->for_each<rteleportobj>([&](rteleportobj &t){
+        if(!t.is_active()) return;
+        if(!this->m_can_move) return;
+        if(this->m_primary_coords == t.coords() || (!t.is_one_way() && this->m_primary_coords == t.coords2()))
+        {
+            this->set_can_move(false);
+            env.register_event_current(5, [this, &t]{
+                t.teleport(&this->m_primary_coords);
+                this->set_can_move(true);
+            });
+
+            env.register_event_current(40, [&t]{
+                t.set_active();
+            });
+        }
+    });
 }
 
 bool rplayerobj::can_move() const
@@ -155,5 +189,5 @@ bool rplayerobj::can_move() const
 
 void rplayerobj::set_can_move(const bool b)
 {
-    
+    this->m_can_move = b;
 }

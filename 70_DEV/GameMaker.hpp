@@ -13,14 +13,14 @@ protected:
     gameenv *m_genv = nullptr;
     std::vector<roomtransition*> m_transitions;
 
-    const std::regex c_room_rx{"^room(.): *"};
-    const std::regex c_level_rx{"^level(.): *"};
-    const std::regex c_comment_rx{"^//.+"};
+    const std::regex c_room_rx{"^ *room([0-9]+): *"};
+    const std::regex c_level_rx{"^ *level([0-9]+): *"};
+    const std::regex c_comment_rx{"^ *//.+"};
     const std::regex c_line_rx{"[^\n]+"};
-    const std::regex c_index_rx{"^index: *"};
-    const std::regex c_end_rx{"^end *"};
-    const std::regex c_endroom_rx{"^endroom *"};
-    const std::regex c_endlevel_rx{"^endlevel *"};
+    const std::regex c_index_rx{"^ *index: *"};
+    const std::regex c_end_rx{"^ *end *"};
+    const std::regex c_endroom_rx{"^ *endroom *"};
+    const std::regex c_endlevel_rx{"^ *endlevel *"};
 
 public:
     gamemaker(const std::string _raw_game_str): m_raw_game_str(_raw_game_str) {}
@@ -58,7 +58,7 @@ public:
                 }
                 else if(std::regex_search(str_line, smat, c_level_rx))
                 {
-                    index_level = (int) smat[1].str()[0];
+                    index_level = std::atoi(smat[1].str().c_str());
                     if(!this->m_genv->set_active_index_level(index_level))
                     {
                         this->m_genv->subscribe_new_level(new level(index_level));
@@ -82,7 +82,7 @@ public:
                 if(std::regex_search(str_line, smat, c_room_rx))
                 {
                     status = 3;
-                    index_room = smat[1].str()[0];
+                    index_room = std::atoi(smat[1].str().c_str());
                     roombuff = str_line + '\n';
                     continue;
                 }
@@ -140,6 +140,9 @@ public:
                 }
             }
         }
+
+        //!! Checkpoint step
+        //for(auto i = 0; i < )
 
         this->m_transitions.clear();
         this->m_genv->set_active_level(0);

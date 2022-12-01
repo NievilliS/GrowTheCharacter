@@ -11,6 +11,7 @@ private:
     room *m_active_room = nullptr;
     int m_index;
     unsigned long long ltriggers = 0ULL;
+    bool m_debug_information = false;
 
 public:
     level(const int index): m_index(index) {}
@@ -62,6 +63,15 @@ public:
                 this->m_active_room = *i;
                 return;
             }            
+        }
+    }
+
+    inline void __debug_set_flag()
+    {
+        this->m_debug_information = true;
+        for(auto i = this->m_room_storage.begin(); i != this->m_room_storage.end(); i++)
+        {
+            (*i)->__debug_set_flag();
         }
     }
 };

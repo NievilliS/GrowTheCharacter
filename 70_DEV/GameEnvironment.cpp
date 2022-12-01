@@ -137,3 +137,21 @@ bool gameenv::set_active_index_level(const int index)
     return false;
 }
 
+void gameenv::set_pcoord(v2 *pcoord)
+{
+    this->pcoord = pcoord;
+}
+
+v2 *gameenv::get_pcoord() const
+{
+    return this->pcoord;
+}
+
+void gameenv::__debug_set_flag()
+{
+    this->m_debug_information = true;
+    for(auto i = this->m_level_storage.begin(); i != this->m_level_storage.end(); i++)
+    {
+        (*i)->__debug_set_flag();
+    }
+}

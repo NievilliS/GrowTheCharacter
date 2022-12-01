@@ -43,3 +43,9 @@ void Utils::do_event(const unsigned long long delay, std::function<void()> fct)
     gameenv &genv = *(gameenv*) m_env_ptr;
     genv.register_event_current(delay, fct);
 }
+
+v2 *Utils::get_env_pcoord()
+{
+    gameenv &genv = *(gameenv*) m_env_ptr;
+    return genv.get_pcoord(); 
+}

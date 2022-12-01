@@ -27,6 +27,7 @@ end
 class:
 start 2 2 0
 area 6 1 6 3 toggwall x y l0 64
+teleporter 5 1 3 3 n
 end
 
 endroom

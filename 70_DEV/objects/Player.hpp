@@ -15,4 +15,5 @@ public:
     virtual void physics(unsigned long long tick) override;
     bool can_move() const;
     void set_can_move(const bool b);
+    inline v2 *get_pcoord_ptr() {return &this->m_primary_coords;};
 };
