@@ -6,11 +6,51 @@
 #include "SolidObj.hpp"
 #include "TeleportObj.hpp"
 
+inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerobj *pl, roomtransition *rt, v2 *plprcr)
+{
+    if(rt == nullptr) return false;
+    roomtransition *nx = rt->get_link();
+    if(nx == nullptr) return false;
+
+    if(rt->do_next_level() || rt->do_prev_level())
+    {
+        int nrx = nx->get_room_index();
+        int nlx = nx->get_level_index();
+        env_room->cancel_phys();
+        env_room->remove_obj(pl);
+        *plprcr = nx->get_coord_of_player();
+        env.set_active_index_level(nlx);
+        env.get_active_level()->set_active_index_room(nrx);
+        env.get_active_level()->get_active_room()->add_obj(pl);
+    }
+    else
+    {
+        int nrx = nx->get_room_index();
+        env_room->cancel_phys();
+        env_room->remove_obj(pl);
+        *plprcr = nx->get_coord_of_player();
+        env_level->set_active_index_room(nrx);
+        env_level->get_active_room()->add_obj(pl);
+    }
+
+    checkpoint *cp = env.get_active_level()->get_active_room()->get_checkpoint();
+    if(cp != nullptr)
+        pl->set_checkpoint(cp);
+
+    return true;
+}
+
 void rplayerobj::physics(unsigned long long tick)
 {
     gameenv &env = *(gameenv*) this->m_env_ptr;
     level *env_level = env.get_active_level();
     room *env_room = env_level->get_active_room();
+
+    if(env.r_kbpressed())
+    {
+        die();
+        return;
+    }
 
     // Controls
     v2 bp = m_primary_coords;
@@ -28,38 +68,11 @@ void rplayerobj::physics(unsigned long long tick)
     else if(env_room->collision_with_base(this) == 3)
     {
         roomtransition *rt = env_room->get_if_collide(m_primary_coords);
-        if(rt != nullptr)
+        if(!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
-            roomtransition *nx = rt->get_link();
-            if(nx == nullptr) { this->m_primary_coords = bp; return; }
-
-            if(rt->do_next_level() || rt->do_prev_level())
-            {
-                int nrx = nx->get_room_index();
-                int nlx = nx->get_level_index();
-
-                env_room->cancel_phys();
-                env_room->remove_obj(this);
-                this->m_primary_coords = nx->get_coord_of_player();
-                env.set_active_index_level(nlx);
-                env.get_active_level()->set_active_index_room(nrx);
-                env.get_active_level()->get_active_room()->add_obj(this);
-            }
-            else
-            {
-                int nrx = nx->get_room_index();
-                env_room->cancel_phys();
-                env_room->remove_obj(this);
-                this->m_primary_coords = nx->get_coord_of_player();
-                env_level->set_active_index_room(nrx);
-                env_level->get_active_room()->add_obj(this);
-            }
-            return;
+           m_primary_coords = bp;
         }
-        else
-        {
-           m_primary_coords = bp; 
-        }
+        else return;
     }
 
     // On collision check and reset
@@ -85,38 +98,11 @@ void rplayerobj::physics(unsigned long long tick)
     else if(env_room->collision_with_base(this) == 3)
     {
         roomtransition *rt = env_room->get_if_collide(m_primary_coords);
-        if(rt != nullptr)
+        if(!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
-            roomtransition *nx = rt->get_link();
-            if(nx == nullptr)  { this->m_primary_coords.hori = bp.hori; return; }
-
-            if(rt->do_next_level() || rt->do_prev_level())
-            {
-                int nrx = nx->get_room_index();
-                int nlx = nx->get_level_index();
-
-                env_room->cancel_phys();
-                env_room->remove_obj(this);
-                this->m_primary_coords = nx->get_coord_of_player();
-                env.set_active_index_level(nlx);
-                env.get_active_level()->set_active_index_room(nrx);
-                env.get_active_level()->get_active_room()->add_obj(this);
-            }
-            else
-            {
-                int nrx = nx->get_room_index();
-                env_room->cancel_phys();
-                env_room->remove_obj(this);
-                this->m_primary_coords = nx->get_coord_of_player();
-                env_level->set_active_index_room(nrx);
-                env_level->get_active_room()->add_obj(this);
-            }
-            return;
+           m_primary_coords.hori = bp.hori; 
         }
-        else
-        {
-           m_primary_coords = bp; 
-        }
+        else return;
     }
 
     // On collision check and reset
@@ -190,4 +176,36 @@ bool rplayerobj::can_move() const
 void rplayerobj::set_can_move(const bool b)
 {
     this->m_can_move = b;
+}
+
+void rplayerobj::set_checkpoint(void *_checkpoint_ptr)
+{
+    checkpoint *cp = (checkpoint*) _checkpoint_ptr;
+    cp->m_player_char = this->m_character;
+    this->m_checkpoint_ptr = cp;
+}
+
+void rplayerobj::die()
+{
+    gameenv &env = *(gameenv*) this->m_env_ptr;
+    this->set_can_move(false);
+
+    /* TODO: Effect */
+    env.register_event_current(20, [&]{
+        gameenv &env = *(gameenv*) this->m_env_ptr;
+        level *env_level = env.get_active_level();
+        room *env_room = env_level->get_active_room();
+        checkpoint *cp = (checkpoint*) this->m_checkpoint_ptr;
+        room *target_room = (room*) cp->m_room_ptr;
+        int target_room_index = target_room->get_index();
+        v2 target_pos = cp->m_room_pos;
+        char target_char = cp->m_player_char;
+
+        env_room->cancel_phys();
+        env_room->remove_obj(this);
+        this->m_primary_coords = target_pos;
+        env_level->set_active_index_room(target_room_index);
+        env.get_active_level()->get_active_room()->add_obj(this);
+        this->set_can_move(true);
+    });
 }

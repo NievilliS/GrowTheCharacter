@@ -117,7 +117,7 @@ void room::physics(unsigned long long tick)
 
     //!! Event queue handle
     {
-        std::vector<std::vector<reventqueue*>::iterator> indices;
+        std::vector<std::vector<revent*>::iterator> indices;
         for(auto i = this->m_event_queue.begin(); i != m_event_queue.end(); i++)
         {
             if((*i)->check_run(tick))
@@ -192,7 +192,7 @@ int room::collision_with_base(rplayerobj *rpo)
 
 void room::register_event(const unsigned long long tick, const std::function<void()> fct)
 {
-    this->m_event_queue.push_back(reventqueue::make(tick, fct));
+    this->m_event_queue.push_back(revent::make(tick, fct));
 }
 
 void room::run_trigger(int ID)
@@ -213,7 +213,7 @@ room::~room()
     }
     this->m_object_storage.clear();
 
-    for(std::vector<reventqueue*>::iterator i = this->m_event_queue.begin(); i != this->m_event_queue.end(); i++)
+    for(std::vector<revent*>::iterator i = this->m_event_queue.begin(); i != this->m_event_queue.end(); i++)
     {
         delete *i;
     }
@@ -224,6 +224,8 @@ room::~room()
         delete *i;
     }
     this->m_transition_storage.clear();
+
+    delete this->m_checkpoint;
 }
 
 roomtransition *room::get_if_collide(const v2 &v)

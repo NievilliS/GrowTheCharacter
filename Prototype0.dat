@@ -74,6 +74,7 @@ level0:
     name: The funny word play
     bgrcol: BLACK
     txtcol: GREEN
+    checkpoint: 6 3
 
     tiles:
 #######33###44#######

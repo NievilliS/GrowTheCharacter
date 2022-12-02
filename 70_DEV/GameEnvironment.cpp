@@ -85,6 +85,14 @@ gameenv::gameenv():
                 case 97:
                     this->left_kbpress();
                 break;
+
+                case 114:
+                    this->r_kbpress();
+                break;
+
+                /*default:
+                    ConsoleEngine_context << c << ConsoleEngine::PRINTOUT;
+                break;*/
             }
 
             c = getchar();

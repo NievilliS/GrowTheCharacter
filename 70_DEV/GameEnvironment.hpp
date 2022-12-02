@@ -10,6 +10,7 @@
 #define KEY_DOWN_BIT                (1)
 #define KEY_LEFT_BIT                (2)
 #define KEY_RIGHT_BIT               (3)
+#define KEY_R_BIT                   (4)
 
 #define _keypress_press(bit)     (this->m_keymap |= (1 << (bit)))
 #define _keypress_pressed(bit)   ((this->m_keymap & (1 << (bit))) > ((this->m_keymap &= ~(1 << (bit))) & 0))
@@ -51,6 +52,7 @@ public:
     _keypress_fcts_make(down, KEY_DOWN_BIT);
     _keypress_fcts_make(left, KEY_LEFT_BIT);
     _keypress_fcts_make(right, KEY_RIGHT_BIT);
+    _keypress_fcts_make(r, KEY_R_BIT);
 
     /** PRE GAME **/
     inline void subscribe_new_level(level *&&_level) {this->m_level_storage.push_back(_level);}

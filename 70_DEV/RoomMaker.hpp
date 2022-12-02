@@ -68,13 +68,14 @@ protected:
         c_class_rx{"^ *class: *"},
         c_transition_rx{"^ *transitions: *"},
         c_transition_gsub_rx{"^ *(.)=([0-9]+) *"},
+        c_checkpoint_rx{"^ *checkpoint: ([0-9]+) ([0-9]+) *"},
 
-        c_cl_start_rx{"start ([0-9x]+) ([0-9y]+) (.) *"},
+        c_cl_start_rx{"^ *start ([0-9x]+) ([0-9y]+) (.) *"},
         c_cl_area_rx{"^ *area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) +.+"},
         c_cl_speed_rx{" *(.)speed ([0-9x]+) ([0-9y]+) *"},
-        c_cl_button_rx{"button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
-        c_cl_toggwall_rx{"toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
-        c_cl_spinner_rx{"spinner ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) ([0-9.]+) ([0-9]+) *"},
+        c_cl_button_rx{" *button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
+        c_cl_toggwall_rx{" *toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
+        c_cl_spinner_rx{" *spinner ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) ([0-9.]+) ([0-9]+) *"},
         c_cl_teleporter_rx{"^ *teleporter ([0-9]) ([0-9]) ([0-9]) ([0-9]) ([yn]) *"};
 
 public:
@@ -144,6 +145,10 @@ public:
                 else if(std::regex_match(str_line, c_transition_rx))
                 {
                     status = 4;
+                }
+                else if(std::regex_search(str_line, smat, c_checkpoint_rx))
+                {
+                    ret->set_checkpoint(v2{std::atoi(smat[2].str().c_str()), std::atoi(smat[1].str().c_str())});
                 }
             }
             else if(status == 1)
@@ -405,15 +410,10 @@ public:
 
                 if(std::regex_search(str_line, smat, c_cl_start_rx))
                 {
-                    if(area_flag)
-                    {
-                        for(int x = a; x <= c; x++) for(int y = b; y <= d; y++)
-                        {
-                            ret->add_obj(new rplayerobj(env_ptr, x, y, smat[3].str()[0]));
-                        }
-                    }
-                    else
-                        ret->add_obj(new rplayerobj(env_ptr, std::atoi(smat[1].str().c_str()), std::atoi(smat[2].str().c_str()), smat[3].str()[0]));
+                    rplayerobj *ro = new rplayerobj(env_ptr, std::atoi(smat[1].str().c_str()), std::atoi(smat[2].str().c_str()), smat[3].str()[0]);
+                    ret->add_obj(ro);
+                    ret->set_checkpoint(v2{std::atoi(smat[2].str().c_str()), std::atoi(smat[1].str().c_str())});
+                    ro->set_checkpoint(ret->get_checkpoint());
                 }
 
 

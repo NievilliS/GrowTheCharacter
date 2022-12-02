@@ -8,6 +8,19 @@
 #include <atomic>
 #include <memory>
 
+class checkpoint
+{
+public:
+    void *m_room_ptr;
+    v2 m_room_pos;
+    char m_player_char = 0;
+
+    checkpoint(void *_room_ptr, const v2 _room_pos):
+        m_room_pos(_room_pos),
+        m_room_ptr(_room_ptr)
+    {}
+};
+
 class room
 {
 private:
@@ -16,7 +29,7 @@ private:
     Pixel::Color m_foreground_color;
     v2 m_size;
     std::vector<robj*> m_object_storage;
-    std::vector<reventqueue*> m_event_queue;
+    std::vector<revent*> m_event_queue;
     std::vector<roomtransition*> m_transition_storage;
     std::string m_room_name;
     int m_index;
@@ -24,6 +37,7 @@ private:
     unsigned long long m_next_trigger_map = 0ULL;
     bool m_cancel_phys = false;
     bool m_debug_information = false;
+    checkpoint *m_checkpoint = nullptr;
 
 public:
     room(const int _index);
@@ -85,4 +99,6 @@ public:
     inline void add_transition(roomtransition *rt) {this->m_transition_storage.push_back(rt);}
     inline void cancel_phys() {this->m_cancel_phys = true;}
     inline void __debug_set_flag() {this->m_debug_information = true;}
+    inline void set_checkpoint(v2 v) {this->m_checkpoint = new checkpoint(this, v);}
+    inline checkpoint *get_checkpoint() {return this->m_checkpoint;}
 };
