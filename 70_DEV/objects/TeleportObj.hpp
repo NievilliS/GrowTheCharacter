@@ -3,7 +3,7 @@
 #include "CharObj.hpp"
 #include "Utils.hpp"
 
-class rteleportobj: public rcharobj
+class rteleportobj : public rcharobj
 {
 protected:
     v2 m_secondary_coords;
@@ -11,9 +11,9 @@ protected:
     bool m_active = true;
 
 public:
-    rteleportobj(const int x, const int y, const int xd, const int yd, const int _one_way) :
-        rcharobj(x, y, '@', Pixel::RED, D), m_secondary_coords{yd, xd}, m_one_way(_one_way > 0)
-    {}
+    rteleportobj(const int x, const int y, const int xd, const int yd, const int _one_way) : rcharobj(x, y, '@', Pixel::RED, D), m_secondary_coords{yd, xd}, m_one_way(_one_way > 0)
+    {
+    }
 
     inline v2 &coords2()
     {
@@ -32,7 +32,7 @@ public:
     {
         static Pixel_t pxl2nd = Pixel::create_pixel('@', Pixel::BLUE);
         static Pixel_t pxldea = Pixel::create_pixel('@', Pixel::BLACK);
-        if(m_active)
+        if (m_active)
             return rcharobj::draw(tick) + get_coord_str2() + pxl2nd;
         else
             return pixelstr{pxldea + get_coord_str2() + pxldea};
@@ -46,11 +46,11 @@ public:
     inline void teleport(v2 *v)
     {
         m_active = false;
-        if(*v == m_secondary_coords)
+        if (*v == m_secondary_coords)
         {
             *v = m_primary_coords;
         }
-        else if(*v == m_primary_coords)
+        else if (*v == m_primary_coords)
         {
             *v = m_secondary_coords;
         }

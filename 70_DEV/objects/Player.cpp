@@ -8,11 +8,13 @@
 
 inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerobj *pl, roomtransition *rt, v2 *plprcr)
 {
-    if(rt == nullptr) return false;
+    if (rt == nullptr)
+        return false;
     roomtransition *nx = rt->get_link();
-    if(nx == nullptr) return false;
+    if (nx == nullptr)
+        return false;
 
-    if(rt->do_next_level() || rt->do_prev_level())
+    if (rt->do_next_level() || rt->do_prev_level())
     {
         int nrx = nx->get_room_index();
         int nlx = nx->get_level_index();
@@ -34,7 +36,7 @@ inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerob
     }
 
     checkpoint *cp = env.get_active_level()->get_active_room()->get_checkpoint();
-    if(cp != nullptr)
+    if (cp != nullptr)
         pl->set_checkpoint(cp);
 
     return true;
@@ -42,11 +44,11 @@ inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerob
 
 void rplayerobj::physics(unsigned long long tick)
 {
-    gameenv &env = *(gameenv*) this->m_env_ptr;
+    gameenv &env = *(gameenv *)this->m_env_ptr;
     level *env_level = env.get_active_level();
     room *env_room = env_level->get_active_room();
 
-    if(env.r_kbpressed())
+    if (env.r_kbpressed())
     {
         die();
         return;
@@ -54,67 +56,70 @@ void rplayerobj::physics(unsigned long long tick)
 
     // Controls
     v2 bp = m_primary_coords;
-    if(env.up_kbpressed() && m_can_move)
+    if (env.up_kbpressed() && m_can_move)
         m_primary_coords.vert--;
-    if(env.down_kbpressed() && m_can_move)
+    if (env.down_kbpressed() && m_can_move)
         m_primary_coords.vert++;
 
     // Disallow for clipping
-    if(env_room->collision_with_base(this) == 1)
+    if (env_room->collision_with_base(this) == 1)
     {
         m_primary_coords = bp;
     }
     // Room transition
-    else if(env_room->collision_with_base(this) == 3)
+    else if (env_room->collision_with_base(this) == 3)
     {
         roomtransition *rt = env_room->get_if_collide(m_primary_coords);
-        if(!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
-        {
-           m_primary_coords = bp;
-        }
-        else return;
-    }
-
-    // On collision check and reset
-    env_room->for_each<rsolidobj>([&](rsolidobj &t){
-        if(m_primary_coords == t.coords() && t.is_solid())
+        if (!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
             m_primary_coords = bp;
         }
-    });
+        else
+            return;
+    }
 
-    if(env.left_kbpressed() && m_can_move)
+    // On collision check and reset
+    env_room->for_each<rsolidobj>([&](rsolidobj &t)
+                                  {
+        if(m_primary_coords == t.coords() && t.is_solid())
+        {
+            m_primary_coords = bp;
+        } });
+
+    if (env.left_kbpressed() && m_can_move)
         m_primary_coords.hori--;
-    if(env.right_kbpressed() && m_can_move)
+    if (env.right_kbpressed() && m_can_move)
         m_primary_coords.hori++;
 
     // Enable better controls by resetting individually
-    if(env_room->collision_with_base(this) == 1)
+    if (env_room->collision_with_base(this) == 1)
     {
         m_primary_coords.hori = bp.hori;
     }
 
     // Room transition
-    else if(env_room->collision_with_base(this) == 3)
+    else if (env_room->collision_with_base(this) == 3)
     {
         roomtransition *rt = env_room->get_if_collide(m_primary_coords);
-        if(!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
-        {
-           m_primary_coords.hori = bp.hori; 
-        }
-        else return;
-    }
-
-    // On collision check and reset
-    env_room->for_each<rsolidobj>([&](rsolidobj &t){
-        if(m_primary_coords == t.coords() && t.is_solid())
+        if (!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
             m_primary_coords.hori = bp.hori;
         }
-    });
+        else
+            return;
+    }
+
+    // On collision check and reset
+    env_room->for_each<rsolidobj>([&](rsolidobj &t)
+                                  {
+        if(m_primary_coords == t.coords() && t.is_solid())
+        {
+            m_primary_coords.hori = bp.hori;
+        } });
 
     // On collision eat inputs and reset moving ability + disable for buffering
-    env_room->for_each<rspeedbump>([&](rspeedbump &t){
+    env_room->for_each<rspeedbump>([&](rspeedbump &t)
+                                   {
         static __UINT8_TYPE__ offset = 0u;
         if(bp == t.coords())
         {
@@ -138,19 +143,19 @@ void rplayerobj::physics(unsigned long long tick)
                         this->set_can_move(true);
                 });
             }
-        }
-    });
+        } });
 
     // On collision press button
-    env_room->for_each<rbuttonobj>([&](rbuttonobj &t){
+    env_room->for_each<rbuttonobj>([&](rbuttonobj &t)
+                                   {
         if(m_primary_coords == t.coords())
         {
             t.press(tick);
-        }
-    });
+        } });
 
     // Teleporter
-    env_room->for_each<rteleportobj>([&](rteleportobj &t){
+    env_room->for_each<rteleportobj>([&](rteleportobj &t)
+                                     {
         if(!t.is_active()) return;
         if(!this->m_can_move) return;
         if(this->m_primary_coords == t.coords() || (!t.is_one_way() && this->m_primary_coords == t.coords2()))
@@ -164,8 +169,7 @@ void rplayerobj::physics(unsigned long long tick)
             env.register_event_current(40, [&t]{
                 t.set_active();
             });
-        }
-    });
+        } });
 }
 
 bool rplayerobj::can_move() const
@@ -180,18 +184,19 @@ void rplayerobj::set_can_move(const bool b)
 
 void rplayerobj::set_checkpoint(void *_checkpoint_ptr)
 {
-    checkpoint *cp = (checkpoint*) _checkpoint_ptr;
+    checkpoint *cp = (checkpoint *)_checkpoint_ptr;
     cp->m_player_char = this->m_character;
     this->m_checkpoint_ptr = cp;
 }
 
 void rplayerobj::die()
 {
-    gameenv &env = *(gameenv*) this->m_env_ptr;
+    gameenv &env = *(gameenv *)this->m_env_ptr;
     this->set_can_move(false);
 
     /* TODO: Effect */
-    env.register_event_current(20, [&]{
+    env.register_event_current(20, [&]
+                               {
         gameenv &env = *(gameenv*) this->m_env_ptr;
         level *env_level = env.get_active_level();
         room *env_room = env_level->get_active_room();
@@ -206,6 +211,5 @@ void rplayerobj::die()
         this->m_primary_coords = target_pos;
         env_level->set_active_index_room(target_room_index);
         env.get_active_level()->get_active_room()->add_obj(this);
-        this->set_can_move(true);
-    });
+        this->set_can_move(true); });
 }

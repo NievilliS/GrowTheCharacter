@@ -10,13 +10,13 @@ protected:
     void *m_checkpoint_ptr = nullptr;
 
 public:
-    rplayerobj(void *env_ptr, const int x, const int y, const char c): rcharobj(x, y, c, F3), m_env_ptr(env_ptr) {}
-    rplayerobj(void *env_ptr, const int x, const int y, const char c, const Pixel::Color col): rcharobj(x, y, c, col, F3), m_env_ptr(env_ptr) {}
+    rplayerobj(void *env_ptr, const int x, const int y, const char c) : rcharobj(x, y, c, F3), m_env_ptr(env_ptr) {}
+    rplayerobj(void *env_ptr, const int x, const int y, const char c, const Pixel::Color col) : rcharobj(x, y, c, col, F3), m_env_ptr(env_ptr) {}
 
     virtual void physics(unsigned long long tick) override;
     bool can_move() const;
     void set_can_move(const bool b);
-    inline v2 *get_pcoord_ptr() {return &this->m_primary_coords;};
+    inline v2 *get_pcoord_ptr() { return &this->m_primary_coords; };
     void set_checkpoint(void *_checkpoint_ptr);
     void die();
 };

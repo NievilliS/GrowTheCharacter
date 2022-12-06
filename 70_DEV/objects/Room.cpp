@@ -2,11 +2,10 @@
 #include "../ColorExtensions.hpp"
 #include "Utils.hpp"
 
-room::room(const int _index):
-    m_background_color(Pixel::DEFAULT),
-    m_foreground_color(Pixel::DEFAULT),
-    m_size{1,1},
-    m_index(_index)
+room::room(const int _index) : m_background_color(Pixel::DEFAULT),
+                               m_foreground_color(Pixel::DEFAULT),
+                               m_size{1, 1},
+                               m_index(_index)
 {
 }
 
@@ -21,13 +20,13 @@ void room::set_base_dat_str(pixelstr &bdat)
     this->m_base_dat = bdat;
     this->m_size = get_pixelstr_dim(this->m_base_dat);
 
-    Pixel::for_each(this->m_base_dat, [this](const size_t a, char &b, Pixel::ColorType &c, Pixel::Color &d, Pixel::Font &e){
+    Pixel::for_each(this->m_base_dat, [this](const size_t a, char &b, Pixel::ColorType &c, Pixel::Color &d, Pixel::Font &e)
+                    {
         if(d == Pixel::DEFAULT)
         {
             c = Pixel::TEXT;
             d = this->m_foreground_color;
-        }
-    });
+        } });
 }
 
 void room::add_obj(robj *obj)
@@ -37,12 +36,10 @@ void room::add_obj(robj *obj)
 
 void room::draw(unsigned long long tick)
 {
-    ConsoleEngine_context << ConsoleEngine::CLEAR <<
-        this->m_background_color.get_bcontrols() << "" <<
-        this->m_base_dat;
-    
-    //DEBUB:
-    if(m_debug_information)
+    ConsoleEngine_context << ConsoleEngine::CLEAR << this->m_background_color.get_bcontrols() << "" << this->m_base_dat;
+
+    // DEBUB:
+    if (m_debug_information)
     {
         static v2 *ABC = Utils::get_env_pcoord();
         ConsoleEngine_context << "\n\nP-coords: x" << ABC->hori << "y" << ABC->vert;
@@ -50,65 +47,54 @@ void room::draw(unsigned long long tick)
 
         pixelstr rtrig, ltrig;
 
-        for(int i = 0; i < 64; i++)
+        for (int i = 0; i < 64; i++)
         {
             rtrig += Pixel::create_pixel('0' + (i % 10), Pixel::BACKGROUND,
-                Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL
-            );
+                                         Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL);
         }
         ConsoleEngine_context << rtrig << "\nL-trig: ";
 
-        for(int i = 65; i < 129; i++)
+        for (int i = 65; i < 129; i++)
         {
             ltrig += Pixel::create_pixel('0' + ((i - 5) % 10), Pixel::BACKGROUND,
-                Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL
-            );
+                                         Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL);
         }
         ConsoleEngine_context << ltrig;
     }
 
     pixelstr str_B2, str_B1, str_D, str_F1, str_F2, str_F3, str_F4;
 
-    for(auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
+    for (auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
     {
-        if((*i)->coords() >= v2{0,0} && (*i)->coords() < this->m_size)
-            switch((*i)->get_layer())
+        if ((*i)->coords() >= v2{0, 0} && (*i)->coords() < this->m_size)
+            switch ((*i)->get_layer())
             {
-                case robj::B2:
-                    str_B2 += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::B2:
+                str_B2 += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
-                case robj::B1:
-                    str_B1 += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::B1:
+                str_B1 += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
-                case robj::F1:
-                    str_F1 += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::F1:
+                str_F1 += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
-                case robj::F2:
-                    str_F2 += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::F2:
+                str_F2 += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
-                case robj::F3:
-                    str_F3 += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::F3:
+                str_F3 += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
-                case robj::F4:
-                    str_F4 += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::F4:
+                str_F4 += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
-                case robj::D:
-                default:
-                    str_D += (*i)->get_coord_str() + (*i)->draw(tick);
+            case robj::D:
+            default:
+                str_D += (*i)->get_coord_str() + (*i)->draw(tick);
                 break;
             }
     }
 
-    ConsoleEngine_context <<
-        str_B2 <<
-        str_B1 <<
-        str_D <<
-        str_F1 <<
-        str_F2 <<
-        str_F3 <<
-        str_F4 <<
-        CURSOR_MOVE_TO(1,1) <<
-        ConsoleEngine::PRINTOUT;
+    ConsoleEngine_context << str_B2 << str_B1 << str_D << str_F1 << str_F2 << str_F3 << str_F4 << CURSOR_MOVE_TO(1, 1) << ConsoleEngine::PRINTOUT;
 }
 
 void room::physics(unsigned long long tick)
@@ -117,22 +103,22 @@ void room::physics(unsigned long long tick)
 
     //!! Event queue handle
     {
-        std::vector<std::vector<revent*>::iterator> indices;
-        for(auto i = this->m_event_queue.begin(); i != m_event_queue.end(); i++)
+        std::vector<std::vector<revent *>::iterator> indices;
+        for (auto i = this->m_event_queue.begin(); i != m_event_queue.end(); i++)
         {
-            if((*i)->check_run(tick))
+            if ((*i)->check_run(tick))
                 indices.push_back(i);
         }
 
-        for(auto i = indices.begin(); i != indices.end(); i++)
+        for (auto i = indices.begin(); i != indices.end(); i++)
         {
             this->m_event_queue.erase(*i);
         }
     }
 
-    for(auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
+    for (auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
     {
-        if(m_cancel_phys)
+        if (m_cancel_phys)
         {
             m_cancel_phys = false;
             return;
@@ -146,21 +132,23 @@ void room::physics(unsigned long long tick)
 v2 room::get_pixelstr_dim(const pixelstr &bdat)
 {
     int w = 0;
-    v2 wh{0,0};
+    v2 wh{0, 0};
     const size_t pss = bdat.size();
 
-    for(size_t i = 0; i < pss; i++)
+    for (size_t i = 0; i < pss; i++)
     {
-        if(wh.vert <= 0) wh.vert = 1;
-        
-        if(Pixel::get_pixel_char(bdat[i]) == '\n')
+        if (wh.vert <= 0)
+            wh.vert = 1;
+
+        if (Pixel::get_pixel_char(bdat[i]) == '\n')
         {
             w = 0;
             wh.vert++;
             continue;
         }
         w++;
-        if(w > wh.hori) wh.hori++;
+        if (w > wh.hori)
+            wh.hori++;
     }
 
     return wh;
@@ -178,14 +166,14 @@ void room::set_foreground_color(const Pixel::Color &bgr)
 
 int room::collision_with_base(rplayerobj *rpo)
 {
-    if(rpo->coords().hori < 0 || rpo->coords().hori >= this->m_size.hori || rpo->coords().vert < 0 || rpo->coords().vert >= this->m_size.vert)
+    if (rpo->coords().hori < 0 || rpo->coords().hori >= this->m_size.hori || rpo->coords().vert < 0 || rpo->coords().vert >= this->m_size.vert)
         return 3;
-    switch(Pixel::get_pixel_char(this->m_base_dat[rpo->coords().hori + rpo->coords().vert * (this->m_size.hori + 1)]))
+    switch (Pixel::get_pixel_char(this->m_base_dat[rpo->coords().hori + rpo->coords().vert * (this->m_size.hori + 1)]))
     {
-        case '#':
-            return 1;
-        case ' ':
-            return 0;
+    case '#':
+        return 1;
+    case ' ':
+        return 0;
     }
     return 2;
 }
@@ -207,19 +195,19 @@ bool room::is_triggered(int ID)
 
 room::~room()
 {
-    for(std::vector<robj*>::iterator i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
+    for (std::vector<robj *>::iterator i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
     {
         delete *i;
     }
     this->m_object_storage.clear();
 
-    for(std::vector<revent*>::iterator i = this->m_event_queue.begin(); i != this->m_event_queue.end(); i++)
+    for (std::vector<revent *>::iterator i = this->m_event_queue.begin(); i != this->m_event_queue.end(); i++)
     {
         delete *i;
     }
     this->m_event_queue.clear();
 
-    for(std::vector<roomtransition*>::iterator i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
+    for (std::vector<roomtransition *>::iterator i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
     {
         delete *i;
     }
@@ -230,9 +218,9 @@ room::~room()
 
 roomtransition *room::get_if_collide(const v2 &v)
 {
-    for(auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
+    for (auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
     {
-        if((*i)->collides(v))
+        if ((*i)->collides(v))
             return (*i);
     }
     return nullptr;
@@ -240,10 +228,10 @@ roomtransition *room::get_if_collide(const v2 &v)
 
 void room::remove_obj(const robj *obj)
 {
-    for(auto i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
+    for (auto i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
     {
-        if(*i == obj)
-        { 
+        if (*i == obj)
+        {
             this->m_object_storage.erase(i);
             return;
         }

@@ -15,10 +15,10 @@ public:
     v2 m_room_pos;
     char m_player_char = 0;
 
-    checkpoint(void *_room_ptr, const v2 _room_pos):
-        m_room_pos(_room_pos),
-        m_room_ptr(_room_ptr)
-    {}
+    checkpoint(void *_room_ptr, const v2 _room_pos) : m_room_pos(_room_pos),
+                                                      m_room_ptr(_room_ptr)
+    {
+    }
 };
 
 class room
@@ -28,9 +28,9 @@ private:
     Pixel::Color m_background_color;
     Pixel::Color m_foreground_color;
     v2 m_size;
-    std::vector<robj*> m_object_storage;
-    std::vector<revent*> m_event_queue;
-    std::vector<roomtransition*> m_transition_storage;
+    std::vector<robj *> m_object_storage;
+    std::vector<revent *> m_event_queue;
+    std::vector<roomtransition *> m_transition_storage;
     std::string m_room_name;
     int m_index;
     unsigned long long m_trigger_map = 0ULL;
@@ -42,7 +42,7 @@ private:
 public:
     room(const int _index);
     ~room();
-    
+
     void set_base_dat_str(pixelstr &bdat);
     void add_obj(robj *obj);
     room &operator+(robj *obj);
@@ -54,51 +54,52 @@ public:
     void register_event(const unsigned long long tick, const std::function<void()> fct);
     void run_trigger(int ID);
     bool is_triggered(int ID);
-    template<typename T> void for_each(std::function<void(T &)> fct)
+    template <typename T>
+    void for_each(std::function<void(T &)> fct)
     {
-        std::vector<T*> vct;
-        for(auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
+        std::vector<T *> vct;
+        for (auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
         {
-            T* pt = dynamic_cast<T*>(*i);
-            if(pt != nullptr)
+            T *pt = dynamic_cast<T *>(*i);
+            if (pt != nullptr)
                 vct.push_back(pt);
         }
-    
-        for(auto i = vct.begin(); i != vct.end(); i++)
+
+        for (auto i = vct.begin(); i != vct.end(); i++)
         {
             fct(**i);
         }
     }
-    
+
     void for_each_transition(std::function<void(roomtransition &)> fct)
     {
-        std::vector<roomtransition*> vct;
-        for(auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
+        std::vector<roomtransition *> vct;
+        for (auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
         {
-            roomtransition* pt = dynamic_cast<roomtransition*>(*i);
-            if(pt != nullptr)
+            roomtransition *pt = dynamic_cast<roomtransition *>(*i);
+            if (pt != nullptr)
                 vct.push_back(pt);
         }
 
-        for(auto i = vct.begin(); i != vct.end(); i++)
+        for (auto i = vct.begin(); i != vct.end(); i++)
         {
             fct(**i);
         }
     }
 
-    inline v2 get_size() {return m_size;}
-    inline void set_name(const std::string _name) {this->m_room_name = _name;}
-    inline std::string get_name() const {return this->m_room_name;}
-    inline void set_index(const int _index) {this->m_index = _index;}
-    inline int get_index() const {return this->m_index;}
+    inline v2 get_size() { return m_size; }
+    inline void set_name(const std::string _name) { this->m_room_name = _name; }
+    inline std::string get_name() const { return this->m_room_name; }
+    inline void set_index(const int _index) { this->m_index = _index; }
+    inline int get_index() const { return this->m_index; }
 
     static v2 get_pixelstr_dim(const pixelstr &bdat);
-    inline pixelstr get_base_dat_str() const {return this->m_base_dat;}
+    inline pixelstr get_base_dat_str() const { return this->m_base_dat; }
     roomtransition *get_if_collide(const v2 &v);
     void remove_obj(const robj *obj);
-    inline void add_transition(roomtransition *rt) {this->m_transition_storage.push_back(rt);}
-    inline void cancel_phys() {this->m_cancel_phys = true;}
-    inline void __debug_set_flag() {this->m_debug_information = true;}
-    inline void set_checkpoint(v2 v) {this->m_checkpoint = new checkpoint(this, v);}
-    inline checkpoint *get_checkpoint() {return this->m_checkpoint;}
+    inline void add_transition(roomtransition *rt) { this->m_transition_storage.push_back(rt); }
+    inline void cancel_phys() { this->m_cancel_phys = true; }
+    inline void __debug_set_flag() { this->m_debug_information = true; }
+    inline void set_checkpoint(v2 v) { this->m_checkpoint = new checkpoint(this, v); }
+    inline checkpoint *get_checkpoint() { return this->m_checkpoint; }
 };

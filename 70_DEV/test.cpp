@@ -12,12 +12,11 @@ int main(int argc, char **argv)
 
     gamemaker maker(sb.str());
     gameenv *genv = maker.createenvironment();
-    if(argc > 1 && strcmp(argv[1], "d") == 0)
+    if (argc > 1 && strcmp(argv[1], "d") == 0)
         genv->__debug_set_flag();
 
-    genv->get_active_level()->get_active_room()->for_each<rplayerobj>([genv](rplayerobj &t){
-        genv->set_pcoord(t.get_pcoord_ptr());
-    });
+    genv->get_active_level()->get_active_room()->for_each<rplayerobj>([genv](rplayerobj &t)
+                                                                      { genv->set_pcoord(t.get_pcoord_ptr()); });
 
     genv->launch();
 
