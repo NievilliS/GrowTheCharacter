@@ -1,0 +1,96 @@
+// Room concept and data
+
+index:
+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~'{[]}@€\^°
+end
+
+level0:
+room0:
+name: Test
+bgrcol: BLACK
+txtcol: BLUE % GREEN
+tiles:
+##################
+##################
+##        #     ##
+##      # # ### ##
+##      #   # # ##
+############### ##
+##    <<<<<<<   ##
+## . ########   ##
+##   #<<<<<<<   ##
+### ##############
+##    +    +     2
+## .  +    +  xX 2
+##    #////+     2
+##    #    + 111##
+##  _ #\\\\# 1  ##
+#######    ###  ##
+#######1111#######
+end
+
+# Replacements
+gsub:
+. < + / \ x X _ 
+end
+
+class:
+start 7 12 0
+area 4 5 11 5 lspeed x y
+area 6 7 11 7 lspeed x y
+button 3 13 60 0 1
+area 5 9 5 10 toggwall x y 0 1
+end
+endroom
+
+room1:
+name: Test2
+bgrcol: BLACK
+txtcol: RED % YELLOW
+
+tiles:
+#####1111#####
+#####    #####
+##          ##
+2           ##
+##          ##
+#######  #####
+#######33#####
+end
+
+endroom
+endlevel
+
+level1:
+room0:
+name: HelloWorld
+bgrcol: BLACK
+txtcol: CYAN % YELLOW
+tiles:
+##############
+##############
+-           ##
+-           ##
+-           ##
+##############
+##############
+end
+endroom
+endlevel
+
+level0:
+room2:
+name: Secret
+bgrcol: BLACK
+txtcol: CYAN % GREEN
+tiles:
+####33#####
+####  #####
+##        +
+##        +
+##        +
+###########
+###########
+end
+endroom
+endlevel

@@ -1,45 +1,54 @@
 #pragma once
 
 #include "CharObj.hpp"
+#include <cmath>
+
+#define sign(a) ((a) < 0 ? -1.0 : 1.0)
+#define period(a) (sign(a) * (((int)abs(a)) % 32 > 15 ? -1.0 : 1.0))
+#define abs(a) ((a) < 0 ? -(a) : (a))
+inline double aprx_sin16(double in)
+{
+    const static double _A = -1.0 / 9216.0;
+    const static double _B = -5.0 / 384.0;
+    const static double _C = 17.0 / 72.0;
+
+    double _abs = fmod(abs(in), 16.0);
+    return period(in) * ((_A * _abs * _abs * _abs) + (_B * _abs * _abs) + (_C * _abs));
+}
+
+inline double aprx_cos16(double in)
+{
+    return aprx_sin16(in + 8.0);
+}
 
 class rspinnyobj : public rcharobj
 {
 private:
     v2 m_secondary_coords;
-    int m_period;
-    int m_offset;
+    double m_period;
+    double m_offset;
+    double m_radius;
 
 public:
-    rspinnyobj(const int x, const int y, const char c, const int period, const int offset, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col), m_secondary_coords{y, x + 1}, m_period(period), m_offset(offset) {}
-    rspinnyobj(const int x, const int y, const char c, const int period, const int offset, const layer_e l, const Pixel::Color col = Pixel::DEFAULT): rcharobj(x, y, c, col, l), m_secondary_coords{y, x + 1}, m_period(period), m_offset(offset) {}
+    rspinnyobj(const int x, const int y, const char c, const double period, const double offset, const int radius, const Pixel::Color col = Pixel::DEFAULT) : rcharobj(x, y, c, col), m_secondary_coords{y, x + 1}, m_period(period), m_offset(offset), m_radius(radius + 1) {}
+    rspinnyobj(const int x, const int y, const char c, const double period, const double offset, const int radius, const layer_e l, const Pixel::Color col = Pixel::DEFAULT) : rcharobj(x, y, c, col, l), m_secondary_coords{y, x + 1}, m_period(period), m_offset(offset), m_radius(radius + 1) {}
 
-    inline virtual pixelstr get_coord_str() override {pixelstr ps{}; std::string s = std::string(CSI) + std::to_string(m_secondary_coords.vert + 1) + ';' + std::to_string(m_secondary_coords.hori + 1) + 'H'; Pixel::copy_string_to_pixel_string(ps, s); return ps;}
-
-    inline virtual void physics(unsigned long long tick) override
+    inline virtual pixelstr get_coord_str() override
     {
-        auto now = (m_offset + (tick / m_period)) % 8;
-
-        switch(now)
-        {
-            case 0:
-                m_secondary_coords = m_primary_coords + v2{0,1};
-            break; case 1:
-                m_secondary_coords = m_primary_coords + v2{1,1};
-            break; case 2:
-                m_secondary_coords = m_primary_coords + v2{1,0};
-            break; case 3:
-                m_secondary_coords = m_primary_coords + v2{1,-1};
-            break; case 4:
-                m_secondary_coords = m_primary_coords + v2{0,-1};
-            break; case 5:
-                m_secondary_coords = m_primary_coords + v2{-1,-1};
-            break; case 6:
-                m_secondary_coords = m_primary_coords + v2{-1,0};
-            break; case 7:
-                m_secondary_coords = m_primary_coords + v2{-1,1};
-        }
+        pixelstr ps{};
+        std::string s = std::string(CSI) + std::to_string(m_secondary_coords.vert + 1) + ';' + std::to_string(m_secondary_coords.hori + 1) + 'H';
+        Pixel::copy_string_to_pixel_string(ps, s);
+        return ps;
     }
 
-    inline virtual v2 &coords() {return m_secondary_coords;}
+    inline virtual bool physics(unsigned long long tick) override
+    {
+        auto now = (m_offset + (tick / m_period));
 
+        m_secondary_coords = m_primary_coords + v2{(int)(aprx_sin16(now) * (m_radius - .2)), (int)(aprx_cos16(now) * (m_radius - .2))};
+
+        return true;
+    }
+
+    inline virtual v2 &coords() { return m_secondary_coords; }
 };

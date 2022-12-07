@@ -6,40 +6,72 @@ end
 
 level0:
 room0:
-name: Test
+name: Test1
 bgrcol: BLACK
-txtcol: BLUE % GREEN
+txtcol: GREEN
+
 tiles:
-##################
-##################
-##        #     ##
-##      # # ### ##
-##      #   # # ##
-############### ##
-##    <<<<<<<   ##
-## . ########   ##
-##   #<<<<<<<   ##
-### #############2
-##    +    +     2
-## .  +    +  xX#2
-##    #////+    ##
-##    #    + 111##
-##  _ #\\\\# 1  ##
-#######    ###  ##
-######111111#3333#
+#########
+#########
+##     |+
+##     |+
+##     |+
+###   ###
+###000###
 end
 
-# Replacements
 gsub:
-. < + / \ x X _ 
+| 
 end
 
 class:
-start 1 1 0
-area 4 5 11 5 lspeed x y
-area 6 7 11 7 lspeed x y
-button 3 13 60 l0 l1
-area 5 9 5 10 toggwall x y l0 l1
+start 2 2 0
+area 6 1 6 3 toggwall x y l0 64
+teleporter 5 1 3 3 n
+end
+
+endroom
+
+room1:
+name: Test2
+bgrcol: BLACK
+txtcol: GREEN % CYAN
+
+tiles:
+###000###
+###   ###
+##     ##
+##  O  ##
+##     ##
+#########
+#########
+end
+
+gsub:
+O 
+end
+
+class:
+button 3 2 -1 l0 64
+spinner 3 2 X 0.5 0 1
+end
+endroom
+endlevel
+
+level1:
+room0:
+name: Test2
+bgrcol: BLACK
+txtcol: BLUE
+
+tiles:
+#########
+#########
+-      ##
+-      ##
+-      ##
+#########
+#########
 end
 
 endroom

@@ -1,0 +1,7 @@
+// Prototype 0 of GTC game
+
+index:
+0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-*/!"§$%&/()=?,.-;:_<>|~'{[]}@€\^°
+end
+
+include "Prototype0_Level0.dat"

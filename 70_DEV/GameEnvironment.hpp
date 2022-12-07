@@ -10,6 +10,7 @@
 #define KEY_DOWN_BIT                (1)
 #define KEY_LEFT_BIT                (2)
 #define KEY_RIGHT_BIT               (3)
+#define KEY_R_BIT                   (4)
 
 #define _keypress_press(bit)     (this->m_keymap |= (1 << (bit)))
 #define _keypress_pressed(bit)   ((this->m_keymap & (1 << (bit))) > ((this->m_keymap &= ~(1 << (bit))) & 0))
@@ -39,6 +40,9 @@ private:
     std::atomic<int> m_keymap = 0;
     unsigned long long m_tick = 0ULL;
     bool m_running = true;
+    v2 *pcoord;
+    bool m_debug_information = false;
+    std::string m_damage_index;
 
 public:
     gameenv();
@@ -49,6 +53,7 @@ public:
     _keypress_fcts_make(down, KEY_DOWN_BIT);
     _keypress_fcts_make(left, KEY_LEFT_BIT);
     _keypress_fcts_make(right, KEY_RIGHT_BIT);
+    _keypress_fcts_make(r, KEY_R_BIT);
 
     /** PRE GAME **/
     inline void subscribe_new_level(level *&&_level) {this->m_level_storage.push_back(_level);}
@@ -63,5 +68,12 @@ public:
     void debug_notify() {this->m_graphicsmgr.notify(); this->m_physicsmgr.notify();}
     void debug_terminate() {m_dcm.call_termination();}
     inline int size() {return this->m_level_storage.size();}
+    bool set_active_index_level(const int index);
+    void set_pcoord(v2 *pcoord);
+    v2 *get_pcoord() const;
+    void __debug_set_flag();
+    inline void set_dmg_index(const std::string index) {this->m_damage_index = index;}
+    int get_damage_index(const unsigned char c);
+    inline unsigned char get_char_at_index(const int index) {return this->m_damage_index[index];}
 
 };
