@@ -11,7 +11,7 @@ level0:
 ##################
 ## Hello there! ##
 ##################
-##      0        0
+##               0
 ## @             0
 ##               0
 ##################
@@ -30,7 +30,6 @@ level0:
 
     class:
       start 2 4 0
-      rrollerspawner 1 5 > x 40 3
     end
 
   endroom
@@ -253,9 +252,9 @@ level0:
     end
 
     class:
-teleporter 3 4 11 4 y
+      teleporter 3 4 11 4 y
     end
 
-    endroom
+  endroom
 
 endlevel

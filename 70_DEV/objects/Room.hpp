@@ -103,7 +103,7 @@ public:
     static v2 get_pixelstr_dim(const pixelstr &bdat);
     inline pixelstr get_base_dat_str() const { return this->m_base_dat; }
     roomtransition *get_if_collide(const v2 &v);
-    void remove_obj(const robj *obj);
+    void remove_obj(const robj *obj, const bool _free = false);
     inline void add_transition(roomtransition *rt) { this->m_transition_storage.push_back(rt); }
     inline void cancel_phys() { this->m_cancel_phys = true; }
     inline void __debug_set_flag() { this->m_debug_information = true; }

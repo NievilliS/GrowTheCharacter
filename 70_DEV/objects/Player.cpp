@@ -28,6 +28,9 @@ inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerob
             ptenv->get_active_level()->set_active_index_room(nrx);
             ptenv->get_active_level()->get_active_room()->cancel_phys();
             ptenv->get_active_level()->get_active_room()->add_obj(pl);
+            checkpoint *cp = ptenv->get_active_level()->get_active_room()->get_checkpoint();
+            if(cp != nullptr)
+                pl->set_checkpoint(cp);
         });
     }
     else
@@ -37,12 +40,11 @@ inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerob
             env_level->set_active_index_room(nrx);
             env_level->get_active_room()->cancel_phys();
             env_level->get_active_room()->add_obj(pl);
+            checkpoint *cp = env_level->get_active_room()->get_checkpoint();
+            if(cp != nullptr)
+                pl->set_checkpoint(cp);
         });
     }
-
-    checkpoint *cp = env.get_active_level()->get_active_room()->get_checkpoint();
-    if (cp != nullptr)
-        pl->set_checkpoint(cp);
 
     return true;
 }

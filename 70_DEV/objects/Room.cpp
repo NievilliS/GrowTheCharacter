@@ -149,7 +149,7 @@ void room::physics(unsigned long long tick)
     m_objmutex.lock();
     for(auto i = indices.begin(); i != indices.end(); i++)
     {
-        this->remove_obj(**i);
+        this->remove_obj(**i, dynamic_cast<rplayerobj*>(**i) == nullptr);
     }
     for(auto i = m_new_objects.begin(); i != m_new_objects.end(); i++)
     {
@@ -265,7 +265,7 @@ roomtransition *room::get_if_collide(const v2 &v)
     return nullptr;
 }
 
-void room::remove_obj(const robj *obj)
+void room::remove_obj(const robj *obj, const bool _free)
 {
     //m_objmutex.lock();
     for (auto i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
@@ -273,6 +273,8 @@ void room::remove_obj(const robj *obj)
         if (*i == obj)
         {
             this->m_object_storage.erase(i);
+            if(_free)
+                delete obj;
             return;
         }
     }
