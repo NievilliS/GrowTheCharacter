@@ -4,6 +4,7 @@
 #include "GameEnvironment.hpp"
 #include "RoomMaker.hpp"
 #include "objects/RoomTransition.hpp"
+#include <fstream>
 
 class gamemaker
 {
@@ -21,10 +22,10 @@ protected:
     const std::regex c_end_rx{"^ *end *"};
     const std::regex c_endroom_rx{"^ *endroom *"};
     const std::regex c_endlevel_rx{"^ *endlevel *"};
-    const std::regex c_include_rx{"^include \"([^ ]+[.]dat)\""};
+    const std::regex c_include_rx{" *include \"([^ ]+[.]dat)\" *"};
 
 public:
-    gamemaker(const std::string _raw_game_str) : m_raw_game_str(_raw_game_str) {}
+    gamemaker(const std::string _raw_game_str);
     ~gamemaker()
     {
         if (m_genv != nullptr)
@@ -34,9 +35,33 @@ public:
     gameenv *createenvironment();
 };
 
-gameenv *gamemaker::createenvironment()
+gamemaker::gamemaker(const std::string _raw_game_str)
 {
     // PREPROCESSOR
+    std::smatch smat;
+    std::string t_raw_game_str = _raw_game_str;
+
+    while(std::regex_search(t_raw_game_str, smat, c_include_rx))
+    {
+        const std::string mat = smat.str();
+        const std::regex t_rx{mat};
+        const std::string path = smat[1].str();
+
+        std::ifstream file{path};
+        std::stringbuf sb{};
+        file >> &sb;
+        file.close();
+        const std::string sbd = sb.str();
+
+        t_raw_game_str = std::regex_replace(t_raw_game_str, t_rx, sbd, std::regex_constants::format_first_only);
+    }
+
+    m_raw_game_str = t_raw_game_str;
+}
+
+gameenv *gamemaker::createenvironment()
+{
+    
 
     int status = 0;
     int index_level = 0;
@@ -80,6 +105,7 @@ gameenv *gamemaker::createenvironment()
             if (std::regex_match(str_line, c_end_rx))
             {
                 status = 0;
+                m_genv->set_dmg_index(m_index_buffer);
                 continue;
             }
             m_index_buffer += str_line;

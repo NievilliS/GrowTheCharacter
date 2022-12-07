@@ -165,3 +165,16 @@ void gameenv::__debug_set_flag()
         (*i)->__debug_set_flag();
     }
 }
+
+int gameenv::get_damage_index(const unsigned char c)
+{
+    static int size_index = this->m_damage_index.size();
+    if(c == 0) return size_index;
+
+    for(int i = 0; i < size_index; i++)
+    {
+        if(c == this->m_damage_index[i])
+            return i;
+    }
+    return -1;
+}

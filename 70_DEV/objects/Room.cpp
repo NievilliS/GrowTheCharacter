@@ -1,6 +1,7 @@
 #include "Room.hpp"
 #include "../ColorExtensions.hpp"
 #include "Utils.hpp"
+#include "DisappearingWall.hpp"
 
 room::room(const int _index) : m_background_color(Pixel::DEFAULT),
                                m_foreground_color(Pixel::DEFAULT),
@@ -31,11 +32,19 @@ void room::set_base_dat_str(pixelstr &bdat)
 
 void room::add_obj(robj *obj)
 {
-    this->m_object_storage.push_back(obj);
+    this->m_new_objects.push_back(obj);
 }
 
 void room::draw(unsigned long long tick)
 {
+    //TODO: Fix segfault
+    if(m_cancel_phys) return;
+
+    //Copy object storage
+    m_objmutex.lock();
+    std::vector<robj*> objcpy{m_object_storage};
+    m_objmutex.unlock();
+
     ConsoleEngine_context << ConsoleEngine::CLEAR << this->m_background_color.get_bcontrols() << "" << this->m_base_dat;
 
     // DEBUB:
@@ -60,11 +69,12 @@ void room::draw(unsigned long long tick)
                                          Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL);
         }
         ConsoleEngine_context << ltrig;
+        ConsoleEngine_context << "\ntick: " << tick;
     }
 
     pixelstr str_B2, str_B1, str_D, str_F1, str_F2, str_F3, str_F4;
 
-    for (auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
+    for (auto i = objcpy.begin(); i != objcpy.end(); i++)
     {
         if ((*i)->coords() >= v2{0, 0} && (*i)->coords() < this->m_size)
             switch ((*i)->get_layer())
@@ -116,7 +126,13 @@ void room::physics(unsigned long long tick)
         }
     }
 
-    for (auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
+    //!! Object handle + cpy
+    m_objmutex.lock();
+    std::vector<robj*> objcpy{m_object_storage};
+    m_objmutex.unlock();
+    std::vector<std::vector<robj*>::iterator> indices;
+
+    for (auto i = objcpy.begin(); i != objcpy.end(); i++)
     {
         if (m_cancel_phys)
         {
@@ -124,9 +140,32 @@ void room::physics(unsigned long long tick)
             return;
         }
 
-        (*i)->physics(tick);
+        if(!(*i)->physics(tick))
+        {
+            indices.push_back(i);
+        }
     }
+
+    m_objmutex.lock();
+    for(auto i = indices.begin(); i != indices.end(); i++)
+    {
+        this->remove_obj(**i);
+    }
+    for(auto i = m_new_objects.begin(); i != m_new_objects.end(); i++)
+    {
+        this->m_object_storage.push_back(*i);
+    }
+    m_objmutex.unlock();
+    this->m_new_objects.clear();
+
     this->m_trigger_map = this->m_next_trigger_map;
+}
+
+void room::propagate_trigger_sensitive()
+{
+    this->for_each<rdisappearingwall>([&](rdisappearingwall &t){
+        t.physics(0);
+    });
 }
 
 v2 room::get_pixelstr_dim(const pixelstr &bdat)
@@ -164,11 +203,11 @@ void room::set_foreground_color(const Pixel::Color &bgr)
     this->m_foreground_color = bgr;
 }
 
-int room::collision_with_base(rplayerobj *rpo)
+int room::collision_with_base(v2 &rpo)
 {
-    if (rpo->coords().hori < 0 || rpo->coords().hori >= this->m_size.hori || rpo->coords().vert < 0 || rpo->coords().vert >= this->m_size.vert)
+    if (rpo.hori < 0 || rpo.hori >= this->m_size.hori || rpo.vert < 0 || rpo.vert >= this->m_size.vert)
         return 3;
-    switch (Pixel::get_pixel_char(this->m_base_dat[rpo->coords().hori + rpo->coords().vert * (this->m_size.hori + 1)]))
+    switch (Pixel::get_pixel_char(this->m_base_dat[rpo.hori + rpo.vert * (this->m_size.hori + 1)]))
     {
     case '#':
         return 1;
@@ -228,6 +267,7 @@ roomtransition *room::get_if_collide(const v2 &v)
 
 void room::remove_obj(const robj *obj)
 {
+    //m_objmutex.lock();
     for (auto i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
     {
         if (*i == obj)
@@ -236,4 +276,10 @@ void room::remove_obj(const robj *obj)
             return;
         }
     }
+    //m_objmutex.unlock();
+}
+
+unsigned char room::get_char_at_base(v2 &v)
+{
+    return Pixel::get_pixel_char(this->m_base_dat[v.hori + v.vert * (this->m_size.hori + 1)]);
 }

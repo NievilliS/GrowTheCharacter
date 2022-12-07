@@ -36,7 +36,7 @@ endif
 ### SOURCE/OBJ DEFINITIONS ###
 
 # Source Files, You may edit these to include files!
-SOURCES_OBJS := Utils.cpp Room.cpp Player.cpp DisappearingWall.cpp
+SOURCES_OBJS := Utils.cpp Room.cpp Player.cpp DisappearingWall.cpp Roller.cpp
 SOURCES := test.cpp GameManagers.cpp GameEnvironment.cpp $(SOURCES_OBJS:%=objects/%)
 
 # Check if sources not empty

@@ -36,7 +36,7 @@ public:
     robj(const int x, const int y, const int w, const int h) : m_primary_coords{y, x}, m_size{h, w}, m_layer(D) {}
 
     inline virtual pixelstr draw(unsigned long long tick) { return pixelstr(); }
-    inline virtual void physics(unsigned long long tick) {}
+    inline virtual bool physics(unsigned long long tick) {return true;};
     inline virtual pixelstr get_coord_str()
     {
         pixelstr ps{};

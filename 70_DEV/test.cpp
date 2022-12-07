@@ -2,6 +2,7 @@
 #include "ColorExtensions.hpp"
 #include <fstream>
 #include <string.h>
+#include "objects/Roller.hpp"
 
 int main(int argc, char **argv)
 {
@@ -17,6 +18,9 @@ int main(int argc, char **argv)
 
     genv->get_active_level()->get_active_room()->for_each<rplayerobj>([genv](rplayerobj &t)
                                                                       { genv->set_pcoord(t.get_pcoord_ptr()); });
+
+    //genv->get_active_level()->get_active_room()->
+    //    add_obj(new rrollerobj(genv, 1, 5, 'x', robj::RIGHT, 10));
 
     genv->launch();
 

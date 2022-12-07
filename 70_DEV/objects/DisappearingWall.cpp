@@ -1,7 +1,7 @@
 #include "DisappearingWall.hpp"
 #include "Utils.hpp"
 
-void rdisappearingwall::physics(unsigned long long tick)
+bool rdisappearingwall::physics(unsigned long long tick)
 {
     if (Utils::is_trig(m_press_ID))
     {
@@ -13,6 +13,8 @@ void rdisappearingwall::physics(unsigned long long tick)
         this->col = this->m_appear_color;
         this->m_solid = true;
     }
+
+    return true;
 }
 
 bool rdisappearingwall::is_solid()

@@ -23,4 +23,9 @@ public:
         ps += Pixel::create_pixel(m_character, col);
         return ps;
     }
+
+    inline virtual char get_raw_character()
+    {
+        return m_character;
+    }
 };

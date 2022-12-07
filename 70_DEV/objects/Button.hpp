@@ -151,13 +151,15 @@ public:
      *
      * @param tick: Current physics tick
      */
-    inline virtual void physics(unsigned long long tick) override
+    inline virtual bool physics(unsigned long long tick) override
     {
         if (m_tick_delay != -1 && m_pressed && tick > m_tick_start + m_tick_delay)
         {
             m_pressed = false;
             Utils::do_trig(m_release_ID);
         }
+
+        return true;
     }
 
     /**

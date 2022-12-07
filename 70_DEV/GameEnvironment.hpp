@@ -42,6 +42,7 @@ private:
     bool m_running = true;
     v2 *pcoord;
     bool m_debug_information = false;
+    std::string m_damage_index;
 
 public:
     gameenv();
@@ -71,5 +72,8 @@ public:
     void set_pcoord(v2 *pcoord);
     v2 *get_pcoord() const;
     void __debug_set_flag();
+    inline void set_dmg_index(const std::string index) {this->m_damage_index = index;}
+    int get_damage_index(const unsigned char c);
+    inline unsigned char get_char_at_index(const int index) {return this->m_damage_index[index];}
 
 };

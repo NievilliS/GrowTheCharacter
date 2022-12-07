@@ -45,4 +45,9 @@ public:
             cord->hori++;
         }
     }
+
+    direction_e get_direction()
+    {
+        return m_direction;
+    }
 };

@@ -8,6 +8,8 @@
 #include "objects/DisappearingWall.hpp"
 #include "objects/Spinny.hpp"
 #include "objects/TeleportObj.hpp"
+#include "objects/Roller.hpp"
+#include "objects/RollerSpawner.hpp"
 
 const Pixel::Color &get_color(std::string st)
 {
@@ -73,10 +75,12 @@ protected:
         c_cl_start_rx{"^ *start ([0-9x]+) ([0-9y]+) (.) *"},
         c_cl_area_rx{"^ *area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) +.+"},
         c_cl_speed_rx{" *(.)speed ([0-9x]+) ([0-9y]+) *"},
+        c_cl_roller_rx{" *(.)roller ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) *"},
+        c_cl_rollerspawner_rx{" *(.)rollerspawner ([0-9x]+) ([0-9y]+) (.) (.) ([0-9]+) ([0-9.]+) *"},
         c_cl_button_rx{" *button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
-        c_cl_toggwall_rx{" *toggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
-        c_cl_spinner_rx{" *spinner ([0-9x]+) ([0-9y]+) (.) ([0-9.]+) ([0-9.]+) ([0-9]+) *"},
-        c_cl_teleporter_rx{"^ *teleporter ([0-9]) ([0-9]) ([0-9]) ([0-9]) ([yn]) *"};
+        c_cl_toggwall_rx{" *(t|h)oggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
+        c_cl_spinner_rx{" *spinner ([0-9x]+) ([0-9y]+) (.) ([-]?[0-9.]+) ([0-9.]+) ([0-9]+) *"},
+        c_cl_teleporter_rx{"^ *teleporter ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([yn]) *"};
 
 public:
     roommaker(const int _level_index, std::vector<roomtransition *> *_transitions, const std::string _raw_room_string) : m_raw_room_str(_raw_room_string), m_transitions(_transitions), m_level_index(_level_index) {}
@@ -364,6 +368,12 @@ room *roommaker::createroom(void *env_ptr)
                     {
                         if(c == tile_str[x])
                             c = tile_str[x+1];
+
+                        // Color
+                        if(c == '#')
+                            col = ((i % (wh.hori+1)) + (i/(wh.hori+1))) % 2 > 0 ? tcol2 : Pixel::DEFAULT;
+                        else
+                            col = Pixel::WHITE;
                     } });
                 ret->set_base_dat_str(ps);
             }
@@ -379,6 +389,9 @@ room *roommaker::createroom(void *env_ptr)
             {
                 int c = smat[1].str()[0];
                 int r = std::atoi(smat[2].str().c_str());
+
+                if(c == '+' || c == '-' || r == '+' || r == '-')
+                    throw std::runtime_error{"You can't override or gsub reserved transition IDs!"};
 
                 ret->for_each_transition([&c, &r](roomtransition &rt)
                                          {
@@ -466,8 +479,9 @@ room *roommaker::createroom(void *env_ptr)
 
             else if (std::regex_search(str_line, smat, c_cl_toggwall_rx))
             {
-                int prID = std::atoi(smat[4].str().c_str()) + (smat[3].str()[0] == 'l' ? 65 : 0);
-                int reID = std::atoi(smat[6].str().c_str()) + (smat[5].str()[0] == 'l' ? 65 : 0);
+                int prID = std::atoi(smat[5].str().c_str()) + (smat[4].str()[0] == 'l' ? 65 : 0);
+                int reID = std::atoi(smat[7].str().c_str()) + (smat[6].str()[0] == 'l' ? 65 : 0);
+                bool ish = smat[1].str()[0] == 'h';
 
                 if (area_flag)
                 {
@@ -475,11 +489,11 @@ room *roommaker::createroom(void *env_ptr)
                         for (int y = b; y <= d; y++)
                         {
 
-                            ret->add_obj(new rdisappearingwall(x, y, robj::F2, prID, reID));
+                            ret->add_obj(new rdisappearingwall(x, y, robj::F2, ish ? ret->get_foreground_color() : Pixel::DEFAULT, prID, reID));
                         }
                 }
                 else
-                    ret->add_obj(new rdisappearingwall(std::atoi(smat[1].str().c_str()), std::atoi(smat[2].str().c_str()), robj::F2, prID, reID));
+                    ret->add_obj(new rdisappearingwall(std::atoi(smat[2].str().c_str()), std::atoi(smat[3].str().c_str()), robj::F2, ish ? ret->get_foreground_color() : Pixel::DEFAULT, prID, reID));
             }
 
             else if (std::regex_search(str_line, smat, c_cl_spinner_rx))
@@ -511,7 +525,90 @@ room *roommaker::createroom(void *env_ptr)
 
                 ret->add_obj(new rteleportobj(xs, ys, xd, yd, ow));
             }
+
+            else if(std::regex_search(str_line, smat, c_cl_roller_rx))
+            {
+                //rx = " *(.)roller ([0-9x]+) ([0-9y]+) (.) ([0-9.]+)"
+                double period = std::atof(smat[5].str().c_str());
+                char ch = smat[4].str()[0];
+
+                robj::direction_e _d;
+                switch (smat[1].str()[0])
+                {
+                case 'l':
+                    _d = robj::LEFT;
+                    break;
+                case 'r':
+                    _d = robj::RIGHT;
+                    break;
+                case 'd':
+                    _d = robj::DOWN;
+                    break;
+                case 'u':
+                default:
+                    _d = robj::UP;
+                    break;
+                }
+
+                if (area_flag)
+                {
+                    for (int x = a; x <= c; x++)
+                        for (int y = b; y <= d; y++)
+                        {
+                            ret->add_obj(new rrollerobj(env_ptr, x, y, ch, _d, period));
+                        }
+                }
+                else
+                    ret->add_obj(new rrollerobj(env_ptr,
+                        std::atoi(smat[2].str().c_str()),
+                        std::atoi(smat[3].str().c_str()),
+                        ch, _d, period
+                    ));
+            }
+
+            else if(std::regex_search(str_line, smat, c_cl_rollerspawner_rx))
+            {
+                //rx = " *(.)rollerspawner ([0-9x]+) ([0-9y]+) (.) (.) ([0-9]+) ([0-9.]+) *"
+                robj::direction_e _d;
+                switch (smat[1].str()[0])
+                {
+                case 'l':
+                    _d = robj::LEFT;
+                    break;
+                case 'r':
+                    _d = robj::RIGHT;
+                    break;
+                case 'd':
+                    _d = robj::DOWN;
+                    break;
+                case 'u':
+                default:
+                    _d = robj::UP;
+                    break;
+                }
+
+                char sp_ch = smat[4].str()[0];
+                char ro_ch = smat[5].str()[0];
+                int sp_per = std::atoi(smat[6].str().c_str());
+                int ro_per = std::atoi(smat[7].str().c_str());
+
+                if (area_flag)
+                {
+                    for (int x = a; x <= c; x++)
+                        for (int y = b; y <= d; y++)
+                        {
+                            ret->add_obj(new rrollerspawnerobj(env_ptr, x, y, sp_ch, ro_ch, _d, sp_per, ro_per));
+                        }
+                }
+                else
+                    ret->add_obj(new rrollerspawnerobj(env_ptr,
+                        std::atoi(smat[2].str().c_str()),
+                        std::atoi(smat[3].str().c_str()),
+                        sp_ch, ro_ch, _d, sp_per, ro_per
+                    ));
+            }
         }
     }
+    ret->direct_commit();
     return ret;
 }

@@ -41,11 +41,13 @@ public:
         return ps;
     }
 
-    inline virtual void physics(unsigned long long tick) override
+    inline virtual bool physics(unsigned long long tick) override
     {
         auto now = (m_offset + (tick / m_period));
 
         m_secondary_coords = m_primary_coords + v2{(int)(aprx_sin16(now) * (m_radius - .2)), (int)(aprx_cos16(now) * (m_radius - .2))};
+
+        return true;
     }
 
     inline virtual v2 &coords() { return m_secondary_coords; }

@@ -34,12 +34,10 @@ public:
     {
         for (auto i = m_room_storage.begin(); i != m_room_storage.end(); i++)
         {
-            if (*i != m_active_room)
-                (*i)->physics(0);
+            (*i)->propagate_trigger_sensitive();
         }
 
-        Utils::do_event(1, [&]
-                        { ltriggers = 0ULL; });
+        ltriggers = 0ULL;
     }
     inline void do_ltri(const __UINT8_TYPE__ _ID)
     {
