@@ -57,7 +57,7 @@ protected:
 
     const std::regex
         c_check_rx{"^ *room.: *"},
-        c_index_rx{"^ *room(.): *"},
+        c_index_rx{"^ *room([0-9]+): *"},
         c_line_rx{"[^\n]+"},
         c_tiles_rx{"^ *tiles: *"},
         c_name_rx{"^ *name: ?([^ ]+) *"},
@@ -97,7 +97,7 @@ room *roommaker::createroom(void *env_ptr)
         throw "Room init misformatting";
     }
 
-    room *ret = new room(smat[1].str()[0]);
+    room *ret = new room(std::atoi(smat[1].str().c_str()));
     int status = 0;
     auto lines_begin = std::sregex_iterator(m_raw_room_str.begin(), m_raw_room_str.end(), c_line_rx);
     auto lines_end = std::sregex_iterator();
