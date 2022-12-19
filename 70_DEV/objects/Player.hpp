@@ -8,6 +8,7 @@ protected:
     void *m_env_ptr;
     bool m_can_move = true;
     void *m_checkpoint_ptr = nullptr;
+    v2 m_prev_pos;
 
 public:
     rplayerobj(void *env_ptr, const int x, const int y, const char c) : rcharobj(x, y, c, F3), m_env_ptr(env_ptr) {}
@@ -20,4 +21,7 @@ public:
     void set_checkpoint(void *_checkpoint_ptr);
     void die();
     void check_ded(const unsigned char base_c);
+
+    template<typename T>
+    void plr_check_collision(T &t);
 };

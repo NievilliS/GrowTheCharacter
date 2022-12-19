@@ -87,6 +87,14 @@ void rplayerobj::check_ded(const unsigned char base_c)
     //Ignoring otherwise
 }
 
+template<typename T>
+inline void room_foreach(rplayerobj *p, room *env_room)
+{
+    env_room->for_each<T>([&](T &t){
+        p->plr_check_collision<T>(t);
+    });
+}
+
 bool rplayerobj::physics(unsigned long long tick)
 {
     gameenv &env = *(gameenv *)this->m_env_ptr;
@@ -100,7 +108,7 @@ bool rplayerobj::physics(unsigned long long tick)
     }
 
     // Controls
-    v2 bp = m_primary_coords;
+    this->m_prev_pos = m_primary_coords;
     if (env.up_kbpressed() && m_can_move)
         m_primary_coords.vert--;
     if (env.down_kbpressed() && m_can_move)
@@ -110,7 +118,7 @@ bool rplayerobj::physics(unsigned long long tick)
     int _env_room_coll = env_room->collision_with_base(this->m_primary_coords);
     if (_env_room_coll == 1)
     {
-        m_primary_coords = bp;
+        m_primary_coords = this->m_prev_pos;
     }
     else if (_env_room_coll == 2 && this->m_can_move)
     {
@@ -122,7 +130,7 @@ bool rplayerobj::physics(unsigned long long tick)
         roomtransition *rt = env_room->get_if_collide(m_primary_coords);
         if (!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
-            m_primary_coords = bp;
+            m_primary_coords = this->m_prev_pos;
         }
         else
             return false;
@@ -131,13 +139,13 @@ bool rplayerobj::physics(unsigned long long tick)
     // On collision check and reset
     env_room->for_each<rsolidobj>([&](rsolidobj &t)
                                   {
-        if(bp == t.coords() && t.is_solid() && this->m_can_move)
+        if(this->m_prev_pos == t.coords() && t.is_solid() && this->m_can_move)
         {
             die();
         }
         if(m_primary_coords == t.coords() && t.is_solid())
         {
-            m_primary_coords = bp;
+            m_primary_coords = this->m_prev_pos;
         } });
 
     if (env.left_kbpressed() && m_can_move)
@@ -149,7 +157,7 @@ bool rplayerobj::physics(unsigned long long tick)
     _env_room_coll = env_room->collision_with_base(this->m_primary_coords);
     if (_env_room_coll == 1)
     {
-        m_primary_coords.hori = bp.hori;
+        m_primary_coords.hori = this->m_prev_pos.hori;
     }
 
     else if (_env_room_coll == 2 && this->m_can_move)
@@ -163,7 +171,7 @@ bool rplayerobj::physics(unsigned long long tick)
         roomtransition *rt = env_room->get_if_collide(m_primary_coords);
         if (!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
-            m_primary_coords.hori = bp.hori;
+            m_primary_coords.hori = this->m_prev_pos.hori;
         }
         else
             return false;
@@ -172,40 +180,30 @@ bool rplayerobj::physics(unsigned long long tick)
     // On collision check and reset
     env_room->for_each<rsolidobj>([&](rsolidobj &t)
                                   {
-        if(bp == t.coords() && t.is_solid() && this->m_can_move)
+        if(this->m_prev_pos == t.coords() && t.is_solid() && this->m_can_move)
         {
             die();
         }
         if(m_primary_coords == t.coords() && t.is_solid())
         {
-            m_primary_coords.hori = bp.hori;
+            m_primary_coords.hori = this->m_prev_pos.hori;
         } });
 
     // On collision eat inputs and reset moving ability + disable for buffering
     env_room->for_each<rspeedbump>([&](rspeedbump &t)
                                    {
         static __UINT8_TYPE__ offset = 0u;
-        if(bp == t.coords())
+        if(!this->m_can_move)
+            this->set_can_move(true);
+        if(this->m_prev_pos == t.coords())
         {
             this->set_can_move(false);
-            this->m_primary_coords = bp;
+            this->m_primary_coords = this->m_prev_pos;
             offset++;
             if(offset % 5 == 0)
             {
                 offset = 0;
                 t.push_v2(&this->m_primary_coords);
-                env.register_event_current(1, [this, env_room]{
-                    bool rt = false;
-                    env_room->for_each<rspeedbump>([this, &rt](rspeedbump &t){
-                        if(!rt && this->coords() == t.coords())
-                        {
-                            rt = true;
-                            return;
-                        }
-                    });
-                    if(!rt)
-                        this->set_can_move(true);
-                });
             }
         } });
 
@@ -218,38 +216,13 @@ bool rplayerobj::physics(unsigned long long tick)
         } });
 
     // Teleporter
-    env_room->for_each<rteleportobj>([&](rteleportobj &t)
-                                     {
-        if(!t.is_active()) return;
-        if(!this->m_can_move) return;
-        if(this->m_primary_coords == t.coords() || (!t.is_one_way() && this->m_primary_coords == t.coords2()))
-        {
-            this->set_can_move(false);
-            env.register_event_current(5, [this, &t]{
-                t.teleport(&this->m_primary_coords);
-                this->set_can_move(true);
-            });
-
-            env.register_event_current(40, [&t]{
-                t.set_active();
-            });
-        } });
+    room_foreach<rteleportobj>(this, env_room);
     
     // Spinny obj
-    env_room->for_each<rspinnyobj>([&](rspinnyobj &t){
-        if(t.coords() == this->m_primary_coords && this->m_can_move)
-        {
-            check_ded(t.get_raw_character());
-        }
-    });
+    room_foreach<rspinnyobj>(this, env_room);
 
     // rolling obj
-    env_room->for_each<rrollerobj>([&](rrollerobj &t){
-        if(t.coords() == this->m_primary_coords || t.coords() == bp)
-        {
-            check_ded(t.get_raw_character());
-        }
-    });
+    room_foreach<rrollerobj>(this, env_room);
 
     return true;
 }
@@ -303,4 +276,40 @@ void rplayerobj::die()
         env_level->set_active_index_room(target_room_index);
         env.get_active_level()->get_active_room()->add_obj(this);
         this->set_can_move(true); });
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rrollerobj &t)
+{
+    if(t.coords() == this->m_primary_coords || t.coords() == this->m_prev_pos)
+    {
+        check_ded(t.get_raw_character());
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rspinnyobj &t)
+{
+    if(t.coords() == this->m_primary_coords && this->m_can_move)
+    {
+        check_ded(t.get_raw_character());
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rteleportobj &t)
+{
+    if(!t.is_active()) return;
+    if(!this->m_can_move) return;
+    if(this->m_primary_coords == t.coords() || (!t.is_one_way() && this->m_primary_coords == t.coords2()))
+    {
+        this->set_can_move(false);
+        ((gameenv*) m_env_ptr)->register_event_current(5, [this, &t]{
+            t.teleport(&this->m_primary_coords);
+            this->set_can_move(true);
+        });
+        ((gameenv*) m_env_ptr)->register_event_current(40, [&t]{
+            t.set_active();
+        });
+    }
 }
