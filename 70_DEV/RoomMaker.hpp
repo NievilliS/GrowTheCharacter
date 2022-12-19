@@ -10,6 +10,7 @@
 #include "objects/TeleportObj.hpp"
 #include "objects/Roller.hpp"
 #include "objects/RollerSpawner.hpp"
+#include "objects/BgrObj.hpp"
 
 const Pixel::Color &get_color(std::string st)
 {
@@ -80,7 +81,8 @@ protected:
         c_cl_button_rx{" *button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
         c_cl_toggwall_rx{" *(t|h)oggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
         c_cl_spinner_rx{" *spinner ([0-9x]+) ([0-9y]+) (.) ([-]?[0-9.]+) ([0-9.]+) ([0-9]+) *"},
-        c_cl_teleporter_rx{"^ *teleporter ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([yn]) *"};
+        c_cl_teleporter_rx{"^ *teleporter ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([yn]) *"},
+        c_cl_bgrobj_rx{" *bgr ([0-9x]+) ([0-9y]+) ([A-Z]+) *"};
 
 public:
     roommaker(const int _level_index, std::vector<roomtransition *> *_transitions, const std::string _raw_room_string) : m_raw_room_str(_raw_room_string), m_transitions(_transitions), m_level_index(_level_index) {}
@@ -607,8 +609,44 @@ room *roommaker::createroom(void *env_ptr)
                         sp_ch, ro_ch, _d, sp_per, ro_per
                     ));
             }
+
+            else if(std::regex_search(str_line, smat, c_cl_bgrobj_rx))
+            {
+                Pixel::Color bgr = get_color(smat[3].str());
+
+                if(area_flag)
+                {
+                    for (int x = a; x <= c; x++)
+                        for (int y = b; y <= d; y++)
+                        {
+                            ret->add_obj(new rbgrobj(x,y,bgr));
+                        }
+                }
+                else
+                {
+                    ret->add_obj(new rbgrobj(
+                        std::atoi(smat[1].str().c_str()),
+                        std::atoi(smat[2].str().c_str()),
+                        bgr
+                    ));
+                }
+            }
         }
     }
     ret->direct_commit();
+
+    //!! Post:
+    //! Combine bgr obj
+    std::vector<rbgrobj*> bg_vec = std::move(ret->get_list<rbgrobj>());
+    if(bg_vec.size() > 0)
+    {
+        rbgrobj *combined = new rbgrobj{std::move(bg_vec)};
+        for(auto i = bg_vec.begin(); i != bg_vec.end(); i++)
+        {
+            ret->remove_obj(*i, true);
+        }
+        ret->add_obj(combined);
+    }
+
     return ret;
 }

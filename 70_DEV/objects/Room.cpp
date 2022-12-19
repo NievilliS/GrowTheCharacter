@@ -69,7 +69,8 @@ void room::draw(unsigned long long tick)
                                          Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL);
         }
         ConsoleEngine_context << ltrig;
-        ConsoleEngine_context << "\ntick: " << tick;
+        ConsoleEngine_context << "\nTick: " << tick;
+        ConsoleEngine_context << "\nG-ela: " << Utils::get_env_gela() << "ms, P-ela: " << Utils::get_env_pela() << "ms";
     }
 
     pixelstr str_B2, str_B1, str_D, str_F1, str_F2, str_F3, str_F4;

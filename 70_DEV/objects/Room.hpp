@@ -59,8 +59,9 @@ public:
     void register_event(const unsigned long long tick, const std::function<void()> fct);
     void run_trigger(int ID);
     bool is_triggered(int ID);
+
     template <typename T>
-    void for_each(std::function<void(T &)> fct)
+    std::vector<T*> get_list()
     {
         std::vector<T *> vct;
         m_objmutex.lock();
@@ -71,6 +72,13 @@ public:
                 vct.push_back(pt);
         }
         m_objmutex.unlock();
+        return vct;
+    }
+
+    template <typename T>
+    void for_each(std::function<void(T &)> fct)
+    {
+        std::vector<T *> vct = get_list<T>();
 
         for (auto i = vct.begin(); i != vct.end(); i++)
         {
@@ -80,15 +88,7 @@ public:
 
     void for_each_transition(std::function<void(roomtransition &)> fct)
     {
-        std::vector<roomtransition *> vct;
         for (auto i = this->m_transition_storage.begin(); i != this->m_transition_storage.end(); i++)
-        {
-            roomtransition *pt = dynamic_cast<roomtransition *>(*i);
-            if (pt != nullptr)
-                vct.push_back(pt);
-        }
-
-        for (auto i = vct.begin(); i != vct.end(); i++)
         {
             fct(**i);
         }

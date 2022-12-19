@@ -25,7 +25,7 @@ level1:
   room1:
     name: The Sapphire Passage
     bgrcol: BLACK
-    txtcol: CYAN
+    txtcol: CYAN % BLUE
     
     tiles:
 #####000################################
@@ -51,4 +51,10 @@ level1:
       3=3
       4=4
     end
+
+    class:
+      area 4 0 6 11 bgr x y BLACK
+      area 3 6 37 7 bgr x y BLACK
+    end
+  endroom
 endlevel

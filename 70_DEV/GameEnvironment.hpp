@@ -25,6 +25,8 @@
  */
 class gameenv
 {
+public:
+    int m_g_e, m_p_e;
 private:
     /** MANAGERS **/
     DManager::DControlManager m_dcm;

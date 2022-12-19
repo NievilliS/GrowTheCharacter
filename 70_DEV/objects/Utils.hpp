@@ -14,4 +14,6 @@ public:
     static bool is_trig(const __UINT8_TYPE__ t);
     static void do_event(const unsigned long long delay, std::function<void()> fct);
     static v2 *get_env_pcoord();
+    static int get_env_gela();
+    static int get_env_pela();
 };
