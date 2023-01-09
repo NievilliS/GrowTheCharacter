@@ -26,7 +26,8 @@ level1:
     name: The Sapphire Passage
     bgrcol: BLACK
     txtcol: CYAN % BLUE
-    
+    checkpoint: 5 6
+
     tiles:
 #####000################################
 #####   ########        ################
@@ -53,8 +54,132 @@ level1:
     end
 
     class:
-      area 4 0 6 11 bgr x y BLACK
-      area 3 6 37 7 bgr x y BLACK
+//      area 15 0 22 0 bgr x y GRAY
+//      area 9 2 13 4 bgr x y GRAY
+//      area 10 1 30 3 bgr x y GRAY
+//      area 21 4 26 4 bgr x y GRAY
+//      area 31 2 34 3 bgr x y GRAY
+//      area 34 3 35 4 bgr x y GRAY
+//      bgr 36 4 GRAY
+        area 4 0 6 11 bgr x y GRAY
+        area 3 6 37 7 bgr x y GRAY
+        area 16 5 18 11 bgr x y GRAY
+        area 29 5 31 11 bgr x y GRAY
+        area 8 6 14 7 hoggwall x y l0 l3
+        area 20 6 27 7 hoggwall x y l1 l4
+        area 33 6 37 7 hoggwall x y l2 l5
     end
   endroom
+
+  room2:
+    name: Rolling around
+    bgrcol: BLACK
+    txtcol: BLUE
+    odt: l3
+
+    tiles:
+###111###
+###   ###
+##     ##
+### # ###
+#>     <#
+###   ###
+#>     <#
+###   ###
+##     ##
+###   ###
+##  O  ##
+##     ##
+##-----##
+##^^^^^##
+#########
+    end
+
+    gsub:
+      > < ^ - O 
+    end
+
+    transitions:
+      1=1
+    end
+
+    class:
+      rrollerspawner 0 3 > 2 40 2
+      rrollerspawner 0 5 > 2 35 2
+      lrollerspawner 6 3 < 2 40 2
+      lrollerspawner 6 5 < 2 35 2
+      area 1 11 5 11 toggwall x y l0 l3
+      area 1 12 5 12 urollerspawner x y ^ 2 40 5
+      button 3 9 10 l0 64
+    end
+
+  endroom
+
+  room3:
+    name: Spinning around
+    bgrcol: BLACK
+    txtcol: CYAN
+    odt: l4
+
+    tiles:
+###222###
+###   ###
+##     ##
+##     ##
+##x   x##
+##     ##
+##     ##
+##     ##
+##x   x##
+###   ###
+##     ##
+##     ##
+##     ##
+#########
+#########
+    end
+
+    transitions:
+      2=2
+    end
+
+    class:
+      spinner 1 3 x 2 0 1
+      spinner 1 3 X 2 0 2
+      spinner 5 3 x -2 16 1
+      spinner 5 3 X -2 16 2
+      spinner 1 7 x -2 16 1
+      spinner 1 7 X -2 16 2
+      spinner 5 7 x 2 0 1
+      spinner 5 7 X 2 0 2
+      button 3 10 10 l1 64
+    end
+
+  endroom
+
+  room4:
+    name: Wandering around?
+    bgrcol: BLACK
+    txtcol: MAGENTA
+    odt: l5
+
+    tiles:
+##333##
+##   ##
+##   ##
+##tmp##
+#######
+    end
+
+    transitions:
+      3=3
+    end
+
+    class:
+      button 2 1 10 l2 64
+    end
+
+  endroom
+
+  
 endlevel

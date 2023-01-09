@@ -30,6 +30,7 @@ private:
     v2 m_size;
     std::vector<robj *> m_object_storage;
     std::vector<robj *> m_new_objects;
+    std::vector<robj *> m_del_objects;
     std::vector<revent *> m_event_queue;
     std::vector<roomtransition *> m_transition_storage;
     std::string m_room_name;
@@ -40,6 +41,8 @@ private:
     bool m_debug_information = false;
     checkpoint *m_checkpoint = nullptr;
     std::mutex m_objmutex;
+    std::mutex m_add_del_mutex;
+    int m_on_die_trig = 64;
 
 public:
     room(const int _index);
@@ -47,31 +50,47 @@ public:
 
     void set_base_dat_str(pixelstr &bdat);
     void add_obj(robj *obj);
-    void direct_commit() {for(auto i = m_new_objects.begin(); i != m_new_objects.end(); i++) m_object_storage.push_back(*i); m_new_objects.clear();};
+    void direct_commit()
+    {
+        std::lock_guard<std::mutex> lg{m_add_del_mutex};
+        for (auto i = m_del_objects.begin(); i != m_del_objects.end(); i++)
+        {
+            for (auto o = m_object_storage.begin(); o != m_object_storage.end(); o++)
+                if (*i == *o)
+                {
+                    if(!(*o)->is_valid())
+                        delete *o;
+                    m_object_storage.erase(o);
+                    break;
+                }
+        }
+        m_del_objects.clear();
+        for (auto i = m_new_objects.begin(); i != m_new_objects.end(); i++)
+            m_object_storage.push_back(*i);
+        m_new_objects.clear();
+    };
     room &operator+(robj *obj);
     void draw(unsigned long long tick);
     void physics(unsigned long long tick);
     void set_background_color(const Pixel::Color &bgr);
-    Pixel::Color &get_background_color() {return m_background_color;}
+    Pixel::Color &get_background_color() { return m_background_color; }
     void set_foreground_color(const Pixel::Color &fgr);
-    Pixel::Color &get_foreground_color() {return m_foreground_color;}
+    Pixel::Color &get_foreground_color() { return m_foreground_color; }
     int collision_with_base(v2 &rpo);
     void register_event(const unsigned long long tick, const std::function<void()> fct);
     void run_trigger(int ID);
     bool is_triggered(int ID);
 
     template <typename T>
-    std::vector<T*> get_list()
+    std::vector<T *> get_list()
     {
         std::vector<T *> vct;
-        m_objmutex.lock();
         for (auto i = this->m_object_storage.begin(); i != m_object_storage.end(); i++)
         {
             T *pt = dynamic_cast<T *>(*i);
             if (pt != nullptr)
                 vct.push_back(pt);
         }
-        m_objmutex.unlock();
         return vct;
     }
 
@@ -103,7 +122,7 @@ public:
     static v2 get_pixelstr_dim(const pixelstr &bdat);
     inline pixelstr get_base_dat_str() const { return this->m_base_dat; }
     roomtransition *get_if_collide(const v2 &v);
-    void remove_obj(const robj *obj, const bool _free = false);
+    void remove_obj(robj *obj);
     inline void add_transition(roomtransition *rt) { this->m_transition_storage.push_back(rt); }
     inline void cancel_phys() { this->m_cancel_phys = true; }
     inline void __debug_set_flag() { this->m_debug_information = true; }
@@ -111,4 +130,7 @@ public:
     inline checkpoint *get_checkpoint() { return this->m_checkpoint; }
     unsigned char get_char_at_base(v2 &v);
     void propagate_trigger_sensitive();
+    void set_on_die_trig(const int odt) {this->m_on_die_trig = odt;}
+    int get_on_die_trig() const {return this->m_on_die_trig;}
+    void del_sensitive_objects();
 };

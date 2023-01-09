@@ -11,6 +11,7 @@
 #include "objects/Roller.hpp"
 #include "objects/RollerSpawner.hpp"
 #include "objects/BgrObj.hpp"
+#include "ColorExtensions.hpp"
 
 const Pixel::Color &get_color(std::string st)
 {
@@ -46,6 +47,10 @@ const Pixel::Color &get_color(std::string st)
     {
         return Pixel::WHITE;
     }
+    else if (st.compare("GRAY") == 0)
+    {
+        return Pixel::Extensions::GRAY;
+    }
     return Pixel::DEFAULT;
 }
 
@@ -72,6 +77,7 @@ protected:
         c_transition_rx{"^ *transitions: *"},
         c_transition_gsub_rx{"^ *(.)=([0-9]+) *"},
         c_checkpoint_rx{"^ *checkpoint: ([0-9]+) ([0-9]+) *"},
+        c_odt_rx{"^ *odt: *(l?)([0-9]+) *"},
 
         c_cl_start_rx{"^ *start ([0-9x]+) ([0-9y]+) (.) *"},
         c_cl_area_rx{"^ *area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) +.+"},
@@ -158,6 +164,11 @@ room *roommaker::createroom(void *env_ptr)
             else if (std::regex_search(str_line, smat, c_checkpoint_rx))
             {
                 ret->set_checkpoint(v2{std::atoi(smat[2].str().c_str()), std::atoi(smat[1].str().c_str())});
+            }
+            else if(std::regex_search(str_line, smat, c_odt_rx))
+            {
+                int prID = std::atoi(smat[2].str().c_str()) + (smat[1].str()[0] == 'l' ? 65 : 0);
+                ret->set_on_die_trig(prID);
             }
         }
         else if (status == 1)
@@ -640,13 +651,15 @@ room *roommaker::createroom(void *env_ptr)
     std::vector<rbgrobj*> bg_vec = std::move(ret->get_list<rbgrobj>());
     if(bg_vec.size() > 0)
     {
-        rbgrobj *combined = new rbgrobj{std::move(bg_vec)};
+        rbgrobj *combined = new rbgrobj{std::move(bg_vec), ret->get_background_color()};
         for(auto i = bg_vec.begin(); i != bg_vec.end(); i++)
         {
-            ret->remove_obj(*i, true);
+            (*i)->invalidate();
+            ret->remove_obj(*i);
         }
         ret->add_obj(combined);
     }
+    ret->direct_commit();
 
     return ret;
 }

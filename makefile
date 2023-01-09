@@ -28,7 +28,13 @@ SOURCE_DIR := 70_DEV
 
 OUTPUT_FILE := gtc
 
-CCFLAGS := -Wno-literal-suffix -I./80_EXTERN/ -lX11 -lXtst -O0
+ifdef O
+OPTIMIZER := -O$(O)
+else
+OPTIMIZER := -O0
+endif
+
+CCFLAGS := -Wno-literal-suffix -I./80_EXTERN/ -lX11 -lXtst $(OPTIMIZER)
 ifdef t
 CCFLAGS += -DBRUH
 endif
@@ -36,8 +42,8 @@ endif
 ### SOURCE/OBJ DEFINITIONS ###
 
 # Source Files, You may edit these to include files!
-SOURCES_OBJS := Utils.cpp Room.cpp Player.cpp DisappearingWall.cpp Roller.cpp
-SOURCES := test.cpp GameManagers.cpp GameEnvironment.cpp $(SOURCES_OBJS:%=objects/%)
+SOURCES_OBJS := Utils.cpp Room.cpp Player.cpp DisappearingWall.cpp Roller.cpp Objects.cpp
+SOURCES := main.cpp GameManagers.cpp GameEnvironment.cpp $(SOURCES_OBJS:%=objects/%)
 
 # Check if sources not empty
 ifeq ($(SOURCES),)
