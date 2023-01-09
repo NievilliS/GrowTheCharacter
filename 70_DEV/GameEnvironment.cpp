@@ -90,6 +90,10 @@ gameenv::gameenv() : m_graphicsmgr{this},
                                                case 114:
                                                    this->r_kbpress();
                                                    break;
+                                                
+                                               case 103:
+                                                   ((rplayerobj*) this->m_player)->set_god_mode(!((rplayerobj*) this->m_player)->is_god_mode());
+                                                   break;
 
                                                    /*default:
                                                        ConsoleEngine_context << c << ConsoleEngine::PRINTOUT;
@@ -147,14 +151,15 @@ bool gameenv::set_active_index_level(const int index)
     return false;
 }
 
-void gameenv::set_pcoord(v2 *pcoord)
+void gameenv::set_plr(robj *player)
 {
-    this->pcoord = pcoord;
+    this->m_player = player;
+    this->m_pcoord = &player->coords();
 }
 
 v2 *gameenv::get_pcoord() const
 {
-    return this->pcoord;
+    return this->m_pcoord;
 }
 
 void gameenv::__debug_set_flag()

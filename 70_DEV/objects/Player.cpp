@@ -24,9 +24,9 @@ inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerob
         int nlx = nx->get_level_index();
         env.register_event_current(4, [ptenv, nlx, nrx, pl, plprcr, cop]{
             *plprcr = cop;
+            ptenv->get_active_level()->get_active_room()->del_sensitive_objects();
             ptenv->set_active_index_level(nlx);
             ptenv->get_active_level()->set_active_index_room(nrx);
-            ptenv->get_active_level()->get_active_room()->cancel_phys();
             ptenv->get_active_level()->get_active_room()->add_obj(pl);
             checkpoint *cp = ptenv->get_active_level()->get_active_room()->get_checkpoint();
             if(cp != nullptr)
@@ -37,8 +37,8 @@ inline bool transition(gameenv &env, level *env_level, room *env_room, rplayerob
     {
         env.register_event_current(4, [env_level, nrx, pl, plprcr, cop]{
             *plprcr = cop;
+            env_level->get_active_room()->del_sensitive_objects();
             env_level->set_active_index_room(nrx);
-            env_level->get_active_room()->cancel_phys();
             env_level->get_active_room()->add_obj(pl);
             checkpoint *cp = env_level->get_active_room()->get_checkpoint();
             if(cp != nullptr)
@@ -87,6 +87,14 @@ void rplayerobj::check_ded(const unsigned char base_c)
     //Ignoring otherwise
 }
 
+template<typename T>
+inline void room_foreach(rplayerobj *p, room *env_room, const unsigned long long tick, int xtra_par = 0)
+{
+    env_room->for_each<T>([&](T &t){
+        p->plr_check_collision<T>(t, tick, xtra_par);
+    });
+}
+
 bool rplayerobj::physics(unsigned long long tick)
 {
     gameenv &env = *(gameenv *)this->m_env_ptr;
@@ -100,59 +108,50 @@ bool rplayerobj::physics(unsigned long long tick)
     }
 
     // Controls
-    v2 bp = m_primary_coords;
-    if (env.up_kbpressed() && m_can_move)
-        m_primary_coords.vert--;
-    if (env.down_kbpressed() && m_can_move)
-        m_primary_coords.vert++;
+    this->m_prev_pos = this->m_primary_coords;
+    if (env.up_kbpressed() && this->m_can_move)
+        this->m_primary_coords.vert--;
+    if (env.down_kbpressed() && this->m_can_move)
+        this->m_primary_coords.vert++;
 
     // Disallow for clipping
     int _env_room_coll = env_room->collision_with_base(this->m_primary_coords);
-    if (_env_room_coll == 1)
+    if (_env_room_coll == 1 && !this->m_god_mode)
     {
-        m_primary_coords = bp;
+        this->m_primary_coords = this->m_prev_pos;
     }
-    else if (_env_room_coll == 2 && this->m_can_move)
+    else if (_env_room_coll == 2 && this->m_can_move && !this->m_god_mode)
     {
         check_ded(env_room->get_char_at_base(this->m_primary_coords));
     }
     // Room transition
     else if (_env_room_coll == 3)
     {
-        roomtransition *rt = env_room->get_if_collide(m_primary_coords);
+        roomtransition *rt = env_room->get_if_collide(this->m_primary_coords);
         if (!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
-            m_primary_coords = bp;
+            this->m_primary_coords = this->m_prev_pos;
         }
         else
             return false;
     }
 
     // On collision check and reset
-    env_room->for_each<rsolidobj>([&](rsolidobj &t)
-                                  {
-        if(bp == t.coords() && t.is_solid() && this->m_can_move)
-        {
-            die();
-        }
-        if(m_primary_coords == t.coords() && t.is_solid())
-        {
-            m_primary_coords = bp;
-        } });
+    room_foreach<rsolidobj>(this, env_room, tick, 0);
 
-    if (env.left_kbpressed() && m_can_move)
-        m_primary_coords.hori--;
-    if (env.right_kbpressed() && m_can_move)
-        m_primary_coords.hori++;
+    if (env.left_kbpressed() && this->m_can_move)
+        this->m_primary_coords.hori--;
+    if (env.right_kbpressed() && this->m_can_move)
+        this->m_primary_coords.hori++;
 
     // Enable better controls by resetting individually
     _env_room_coll = env_room->collision_with_base(this->m_primary_coords);
-    if (_env_room_coll == 1)
+    if (_env_room_coll == 1 && !this->m_god_mode)
     {
-        m_primary_coords.hori = bp.hori;
+        this->m_primary_coords.hori = this->m_prev_pos.hori;
     }
 
-    else if (_env_room_coll == 2 && this->m_can_move)
+    else if (_env_room_coll == 2 && this->m_can_move && !this->m_god_mode)
     {
         check_ded(env_room->get_char_at_base(this->m_primary_coords));
     }
@@ -160,96 +159,32 @@ bool rplayerobj::physics(unsigned long long tick)
     // Room transition
     else if (_env_room_coll == 3)
     {
-        roomtransition *rt = env_room->get_if_collide(m_primary_coords);
+        roomtransition *rt = env_room->get_if_collide(this->m_primary_coords);
         if (!transition(env, env_level, env_room, this, rt, &this->m_primary_coords))
         {
-            m_primary_coords.hori = bp.hori;
+            this->m_primary_coords.hori = this->m_prev_pos.hori;
         }
         else
             return false;
     }
 
-    // On collision check and reset
-    env_room->for_each<rsolidobj>([&](rsolidobj &t)
-                                  {
-        if(bp == t.coords() && t.is_solid() && this->m_can_move)
-        {
-            die();
-        }
-        if(m_primary_coords == t.coords() && t.is_solid())
-        {
-            m_primary_coords.hori = bp.hori;
-        } });
+    // On collision check and reset horizontal
+    room_foreach<rsolidobj>(this, env_room, tick, 1);
 
     // On collision eat inputs and reset moving ability + disable for buffering
-    env_room->for_each<rspeedbump>([&](rspeedbump &t)
-                                   {
-        static __UINT8_TYPE__ offset = 0u;
-        if(bp == t.coords())
-        {
-            this->set_can_move(false);
-            this->m_primary_coords = bp;
-            offset++;
-            if(offset % 5 == 0)
-            {
-                offset = 0;
-                t.push_v2(&this->m_primary_coords);
-                env.register_event_current(1, [this, env_room]{
-                    bool rt = false;
-                    env_room->for_each<rspeedbump>([this, &rt](rspeedbump &t){
-                        if(!rt && this->coords() == t.coords())
-                        {
-                            rt = true;
-                            return;
-                        }
-                    });
-                    if(!rt)
-                        this->set_can_move(true);
-                });
-            }
-        } });
+    room_foreach<rspeedbump>(this, env_room, tick);
 
     // On collision press button
-    env_room->for_each<rbuttonobj>([&](rbuttonobj &t)
-                                   {
-        if(m_primary_coords == t.coords())
-        {
-            t.press(tick);
-        } });
+    room_foreach<rbuttonobj>(this, env_room, tick);
 
     // Teleporter
-    env_room->for_each<rteleportobj>([&](rteleportobj &t)
-                                     {
-        if(!t.is_active()) return;
-        if(!this->m_can_move) return;
-        if(this->m_primary_coords == t.coords() || (!t.is_one_way() && this->m_primary_coords == t.coords2()))
-        {
-            this->set_can_move(false);
-            env.register_event_current(5, [this, &t]{
-                t.teleport(&this->m_primary_coords);
-                this->set_can_move(true);
-            });
-
-            env.register_event_current(40, [&t]{
-                t.set_active();
-            });
-        } });
+    room_foreach<rteleportobj>(this, env_room, tick);
     
     // Spinny obj
-    env_room->for_each<rspinnyobj>([&](rspinnyobj &t){
-        if(t.coords() == this->m_primary_coords && this->m_can_move)
-        {
-            check_ded(t.get_raw_character());
-        }
-    });
+    room_foreach<rspinnyobj>(this, env_room, tick);
 
     // rolling obj
-    env_room->for_each<rrollerobj>([&](rrollerobj &t){
-        if(t.coords() == this->m_primary_coords || t.coords() == bp)
-        {
-            check_ded(t.get_raw_character());
-        }
-    });
+    room_foreach<rrollerobj>(this, env_room, tick);
 
     return true;
 }
@@ -273,6 +208,7 @@ void rplayerobj::set_checkpoint(void *_checkpoint_ptr)
 
 void rplayerobj::die()
 {
+    if(!this->m_can_move) return;
     gameenv &env = *(gameenv *)this->m_env_ptr;
     this->set_can_move(false);
     room *rm = env.get_active_level()->get_active_room();
@@ -281,7 +217,7 @@ void rplayerobj::die()
 
     env.register_event_current(5, [&]{
         this->col = Pixel::DEFAULT;
-        this->m_character = 1;
+        this->m_character = 0;
     });
 
     /* TODO: Effect */
@@ -297,10 +233,92 @@ void rplayerobj::die()
         char target_char = cp->m_player_char;
 
         env_room->cancel_phys();
+        Utils::do_trig(env_room->get_on_die_trig());
         env_room->remove_obj(this);
+        env_room->del_sensitive_objects();
         this->m_primary_coords = target_pos;
         this->m_character = target_char;
         env_level->set_active_index_room(target_room_index);
         env.get_active_level()->get_active_room()->add_obj(this);
         this->set_can_move(true); });
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rrollerobj &t, const unsigned long long tick, int xtra_par)
+{
+    if((t.coords() == this->m_primary_coords || t.coords() == this->m_prev_pos) && !this->m_god_mode)
+    {
+        this->check_ded(t.get_raw_character());
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rspinnyobj &t, const unsigned long long tick, int xtra_par)
+{
+    if(t.coords() == this->m_primary_coords && this->m_can_move && !this->m_god_mode)
+    {
+        this->check_ded(t.get_raw_character());
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rteleportobj &t, const unsigned long long tick, int xtra_par)
+{
+    if(!t.is_active() || !this->m_can_move || this->m_god_mode) return;
+    if(this->m_primary_coords == t.coords() || (!t.is_one_way() && this->m_primary_coords == t.coords2()))
+    {
+        this->set_can_move(false);
+        ((gameenv*) this->m_env_ptr)->register_event_current(5, [this, &t]{
+            t.teleport(&this->m_primary_coords);
+            this->set_can_move(true);
+        });
+        ((gameenv*) this->m_env_ptr)->register_event_current(40, [&t]{
+            t.set_active();
+        });
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rbuttonobj &t, const unsigned long long tick, int xtra_par)
+{
+    if(this->m_primary_coords == t.coords())
+    {
+        t.press(tick);
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rspeedbump &t, const unsigned long long tick, int xtra_par)
+{
+    static __UINT8_TYPE__ offset = 0u;
+    if(!this->m_can_move)
+        this->set_can_move(true);
+    if(this->m_prev_pos == t.coords() && !this->m_god_mode)
+    {
+        this->set_can_move(false);
+        this->m_primary_coords = this->m_prev_pos;
+        offset++;
+        if(offset % 5 == 0)
+        {
+            offset = 0;
+            t.push_v2(&this->m_primary_coords);
+        }
+    }
+}
+
+template<>
+void rplayerobj::plr_check_collision<>(rsolidobj &t, const unsigned long long tick, int xtra_par)
+{
+    if(this->m_god_mode) return;
+    if(this->m_prev_pos == t.coords() && t.is_solid() && this->m_can_move)
+    {
+        this->die();
+    }
+    if(this->m_primary_coords == t.coords() && t.is_solid())
+    {
+        if(xtra_par == 1)
+            this->m_primary_coords.hori = this->m_prev_pos.hori;
+        else
+            this->m_primary_coords = this->m_prev_pos;
+    }
 }

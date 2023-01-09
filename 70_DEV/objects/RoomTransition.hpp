@@ -29,12 +29,12 @@ public:
 
     inline bool do_next_level() const
     {
-        return m_meta_index == '+';
+        return m_meta_index == -(signed)'+';
     }
 
     inline bool do_prev_level() const
     {
-        return m_meta_index == '-';
+        return m_meta_index == -(signed)'-';
     }
 
     inline int get_room_index() const

@@ -51,3 +51,14 @@ v2 *Utils::get_env_pcoord()
     gameenv &genv = *(gameenv *)m_env_ptr;
     return genv.get_pcoord();
 }
+
+int Utils::get_env_gela()
+{
+    return ((gameenv*) m_env_ptr)->m_g_e;
+}
+
+int Utils::get_env_pela()
+{
+    return ((gameenv*) m_env_ptr)->m_p_e;
+}
+

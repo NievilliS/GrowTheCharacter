@@ -19,6 +19,7 @@ bool rrollerobj::physics(unsigned long long tick)
     }
     if(m_destroy)
     {
+        invalidate();
         return false;
     }
 
@@ -37,6 +38,7 @@ bool rrollerobj::physics(unsigned long long tick)
     int _env_room_coll = env_room->collision_with_base(this->m_primary_coords);
     if(_env_room_coll == 3)
     {
+        invalidate();
         return false;
     }
     else if(_env_room_coll == 1)

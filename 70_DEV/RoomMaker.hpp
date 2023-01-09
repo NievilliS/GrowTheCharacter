@@ -10,6 +10,8 @@
 #include "objects/TeleportObj.hpp"
 #include "objects/Roller.hpp"
 #include "objects/RollerSpawner.hpp"
+#include "objects/BgrObj.hpp"
+#include "ColorExtensions.hpp"
 
 const Pixel::Color &get_color(std::string st)
 {
@@ -45,6 +47,10 @@ const Pixel::Color &get_color(std::string st)
     {
         return Pixel::WHITE;
     }
+    else if (st.compare("GRAY") == 0)
+    {
+        return Pixel::Extensions::GRAY;
+    }
     return Pixel::DEFAULT;
 }
 
@@ -57,7 +63,7 @@ protected:
 
     const std::regex
         c_check_rx{"^ *room.: *"},
-        c_index_rx{"^ *room(.): *"},
+        c_index_rx{"^ *room([0-9]+): *"},
         c_line_rx{"[^\n]+"},
         c_tiles_rx{"^ *tiles: *"},
         c_name_rx{"^ *name: ?([^ ]+) *"},
@@ -71,6 +77,7 @@ protected:
         c_transition_rx{"^ *transitions: *"},
         c_transition_gsub_rx{"^ *(.)=([0-9]+) *"},
         c_checkpoint_rx{"^ *checkpoint: ([0-9]+) ([0-9]+) *"},
+        c_odt_rx{"^ *odt: *(l?)([0-9]+) *"},
 
         c_cl_start_rx{"^ *start ([0-9x]+) ([0-9y]+) (.) *"},
         c_cl_area_rx{"^ *area ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) +.+"},
@@ -80,7 +87,8 @@ protected:
         c_cl_button_rx{" *button ([0-9x]+) ([0-9y]+) (-?[0-9]+) (l?)([0-9]+) (l?)([0-9]+) *"},
         c_cl_toggwall_rx{" *(t|h)oggwall ([0-9x]+) ([0-9y]+) (l?)([0-9]+) (l?)([0-9]+) *"},
         c_cl_spinner_rx{" *spinner ([0-9x]+) ([0-9y]+) (.) ([-]?[0-9.]+) ([0-9.]+) ([0-9]+) *"},
-        c_cl_teleporter_rx{"^ *teleporter ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([yn]) *"};
+        c_cl_teleporter_rx{"^ *teleporter ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+) ([yn]) *"},
+        c_cl_bgrobj_rx{" *bgr ([0-9x]+) ([0-9y]+) ([A-Z]+) *"};
 
 public:
     roommaker(const int _level_index, std::vector<roomtransition *> *_transitions, const std::string _raw_room_string) : m_raw_room_str(_raw_room_string), m_transitions(_transitions), m_level_index(_level_index) {}
@@ -97,7 +105,7 @@ room *roommaker::createroom(void *env_ptr)
         throw "Room init misformatting";
     }
 
-    room *ret = new room(smat[1].str()[0]);
+    room *ret = new room(std::atoi(smat[1].str().c_str()));
     int status = 0;
     auto lines_begin = std::sregex_iterator(m_raw_room_str.begin(), m_raw_room_str.end(), c_line_rx);
     auto lines_end = std::sregex_iterator();
@@ -156,6 +164,11 @@ room *roommaker::createroom(void *env_ptr)
             else if (std::regex_search(str_line, smat, c_checkpoint_rx))
             {
                 ret->set_checkpoint(v2{std::atoi(smat[2].str().c_str()), std::atoi(smat[1].str().c_str())});
+            }
+            else if(std::regex_search(str_line, smat, c_odt_rx))
+            {
+                int prID = std::atoi(smat[2].str().c_str()) + (smat[1].str()[0] == 'l' ? 65 : 0);
+                ret->set_on_die_trig(prID);
             }
         }
         else if (status == 1)
@@ -607,8 +620,46 @@ room *roommaker::createroom(void *env_ptr)
                         sp_ch, ro_ch, _d, sp_per, ro_per
                     ));
             }
+
+            else if(std::regex_search(str_line, smat, c_cl_bgrobj_rx))
+            {
+                Pixel::Color bgr = get_color(smat[3].str());
+
+                if(area_flag)
+                {
+                    for (int x = a; x <= c; x++)
+                        for (int y = b; y <= d; y++)
+                        {
+                            ret->add_obj(new rbgrobj(x,y,bgr));
+                        }
+                }
+                else
+                {
+                    ret->add_obj(new rbgrobj(
+                        std::atoi(smat[1].str().c_str()),
+                        std::atoi(smat[2].str().c_str()),
+                        bgr
+                    ));
+                }
+            }
         }
     }
     ret->direct_commit();
+
+    //!! Post:
+    //! Combine bgr obj
+    std::vector<rbgrobj*> bg_vec = std::move(ret->get_list<rbgrobj>());
+    if(bg_vec.size() > 0)
+    {
+        rbgrobj *combined = new rbgrobj{std::move(bg_vec), ret->get_background_color()};
+        for(auto i = bg_vec.begin(); i != bg_vec.end(); i++)
+        {
+            (*i)->invalidate();
+            ret->remove_obj(*i);
+        }
+        ret->add_obj(combined);
+    }
+    ret->direct_commit();
+
     return ret;
 }

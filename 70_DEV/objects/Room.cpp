@@ -32,6 +32,7 @@ void room::set_base_dat_str(pixelstr &bdat)
 
 void room::add_obj(robj *obj)
 {
+    std::lock_guard<std::mutex> lg{m_add_del_mutex};
     this->m_new_objects.push_back(obj);
 }
 
@@ -40,10 +41,7 @@ void room::draw(unsigned long long tick)
     //TODO: Fix segfault
     if(m_cancel_phys) return;
 
-    //Copy object storage
-    m_objmutex.lock();
-    std::vector<robj*> objcpy{m_object_storage};
-    m_objmutex.unlock();
+    std::lock_guard<std::mutex> lg{m_objmutex};
 
     ConsoleEngine_context << ConsoleEngine::CLEAR << this->m_background_color.get_bcontrols() << "" << this->m_base_dat;
 
@@ -69,12 +67,13 @@ void room::draw(unsigned long long tick)
                                          Utils::is_trig(i) ? Pixel::BLUE : Pixel::BLACK, Pixel::NORMAL);
         }
         ConsoleEngine_context << ltrig;
-        ConsoleEngine_context << "\ntick: " << tick;
+        ConsoleEngine_context << "\nTick: " << tick;
+        ConsoleEngine_context << "\nG-ela: " << Utils::get_env_gela() << "ms, P-ela: " << Utils::get_env_pela() << "ms";
     }
 
     pixelstr str_B2, str_B1, str_D, str_F1, str_F2, str_F3, str_F4;
 
-    for (auto i = objcpy.begin(); i != objcpy.end(); i++)
+    for (auto i = m_object_storage.begin(); i != m_object_storage.end(); i++)
     {
         if ((*i)->coords() >= v2{0, 0} && (*i)->coords() < this->m_size)
             switch ((*i)->get_layer())
@@ -109,6 +108,7 @@ void room::draw(unsigned long long tick)
 
 void room::physics(unsigned long long tick)
 {
+    std::lock_guard<std::mutex> lg{m_objmutex};
     this->m_next_trigger_map = 0ULL;
 
     //!! Event queue handle
@@ -126,37 +126,23 @@ void room::physics(unsigned long long tick)
         }
     }
 
-    //!! Object handle + cpy
-    m_objmutex.lock();
-    std::vector<robj*> objcpy{m_object_storage};
-    m_objmutex.unlock();
-    std::vector<std::vector<robj*>::iterator> indices;
+    //!! Object handle
 
-    for (auto i = objcpy.begin(); i != objcpy.end(); i++)
+    for (auto i = m_object_storage.begin(); i != m_object_storage.end(); i++)
     {
         if (m_cancel_phys)
         {
             m_cancel_phys = false;
-            return;
+            break;
         }
 
         if(!(*i)->physics(tick))
         {
-            indices.push_back(i);
+            remove_obj(*i);
         }
     }
 
-    m_objmutex.lock();
-    for(auto i = indices.begin(); i != indices.end(); i++)
-    {
-        this->remove_obj(**i, dynamic_cast<rplayerobj*>(**i) == nullptr);
-    }
-    for(auto i = m_new_objects.begin(); i != m_new_objects.end(); i++)
-    {
-        this->m_object_storage.push_back(*i);
-    }
-    m_objmutex.unlock();
-    this->m_new_objects.clear();
+    this->direct_commit();
 
     this->m_trigger_map = this->m_next_trigger_map;
 }
@@ -234,6 +220,7 @@ bool room::is_triggered(int ID)
 
 room::~room()
 {
+    direct_commit();
     for (std::vector<robj *>::iterator i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
     {
         delete *i;
@@ -265,23 +252,26 @@ roomtransition *room::get_if_collide(const v2 &v)
     return nullptr;
 }
 
-void room::remove_obj(const robj *obj, const bool _free)
+void room::remove_obj(robj *obj)
 {
+    std::lock_guard<std::mutex> lg{m_add_del_mutex};
     //m_objmutex.lock();
-    for (auto i = this->m_object_storage.begin(); i != this->m_object_storage.end(); i++)
-    {
-        if (*i == obj)
-        {
-            this->m_object_storage.erase(i);
-            if(_free)
-                delete obj;
-            return;
-        }
-    }
+    this->m_del_objects.push_back(obj);
     //m_objmutex.unlock();
 }
 
 unsigned char room::get_char_at_base(v2 &v)
 {
     return Pixel::get_pixel_char(this->m_base_dat[v.hori + v.vert * (this->m_size.hori + 1)]);
+}
+
+#include "Roller.hpp"
+
+void room::del_sensitive_objects()
+{
+    for_each<rrollerobj>([&](rrollerobj &t){
+        t.invalidate();
+        this->remove_obj(&t);
+    });
+    direct_commit();
 }

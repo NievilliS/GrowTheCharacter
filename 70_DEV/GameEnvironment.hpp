@@ -25,6 +25,8 @@
  */
 class gameenv
 {
+public:
+    int m_g_e, m_p_e;
 private:
     /** MANAGERS **/
     DManager::DControlManager m_dcm;
@@ -40,7 +42,8 @@ private:
     std::atomic<int> m_keymap = 0;
     unsigned long long m_tick = 0ULL;
     bool m_running = true;
-    v2 *pcoord;
+    robj *m_player;
+    v2 *m_pcoord;
     bool m_debug_information = false;
     std::string m_damage_index;
 
@@ -69,7 +72,7 @@ public:
     void debug_terminate() {m_dcm.call_termination();}
     inline int size() {return this->m_level_storage.size();}
     bool set_active_index_level(const int index);
-    void set_pcoord(v2 *pcoord);
+    void set_plr(robj *player);
     v2 *get_pcoord() const;
     void __debug_set_flag();
     inline void set_dmg_index(const std::string index) {this->m_damage_index = index;}

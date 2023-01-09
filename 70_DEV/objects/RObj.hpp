@@ -28,6 +28,7 @@ protected:
     v2 m_primary_coords;
     v2 m_size;
     layer_e m_layer;
+    bool m_valid = true;
 
 public:
     robj() : m_primary_coords{0, 0}, m_size{1, 1}, m_layer(D) {}
@@ -48,4 +49,6 @@ public:
     inline virtual v2 &coords() { return m_primary_coords; }
     inline v2 &size() { return m_size; }
     inline layer_e get_layer() { return m_layer; }
+    inline void invalidate() { m_valid = true; }
+    inline bool is_valid() const {return this->m_valid;}
 };
